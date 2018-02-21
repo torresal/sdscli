@@ -3,9 +3,7 @@ from __future__ import print_function
 
 import os, yaml, logging, traceback
 
-
-log_format = "[%(asctime)s: %(levelname)s/%(name)s/%(funcName)s] %(message)s"
-logging.basicConfig(format=log_format, level=logging.INFO)
+from sdscli.log_utils import logger
 
 
 def get_user_config_path():
@@ -25,7 +23,7 @@ class YamlConf(object):
     def __init__(self, file):
         """Construct YamlConf instance."""
 
-        logging.info("file: {}".format(file))
+        logger.debug("file: {}".format(file))
         self._file = file
         with open(self._file) as f:
             self._cfg = yaml.load(f)
