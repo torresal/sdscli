@@ -15,6 +15,7 @@ from pygments.token import Token
 from sdscli.log_utils import logger
 from sdscli.conf_utils import get_user_config_path, SettingsConf
 from sdscli.os_utils import validate_dir
+from sdscli.prompt_utils import YesNoValidator
 
 
 prompt_style = style_from_dict({
@@ -270,14 +271,6 @@ CFG_DEFAULTS = {
         [ "MONITORED_QUEUE", "dumby-job_worker-large"],
     ]
 }
-
-
-class YesNoValidator(Validator):
-    def validate(self, document):
-        text = document.text.lower()
-        if not text in ('yes', 'no', 'y', 'n'):
-            raise ValidationError(message='Input needs to be "y" or "n"',
-                                  cursor_position=len(text)) 
 
 
 def configure():
