@@ -479,9 +479,6 @@ def configure():
                            style=prompt_style,
                            is_password=True)
                 if p1 == p2:
-                    if p1 == "":
-                        print("Password can't be empty.")
-                        continue
                     v = p1
                     break
                 print("Passwords don't match.")
