@@ -281,6 +281,9 @@ def configure():
     # config file
     cfg_file = get_user_config_path()
     if os.path.exists(cfg_file):
+        cont = prompt("%s already exists. Continue [y/n]: " % cfg_file,
+                      validator=YesNoValidator(), default='n') == 'y'
+        if not cont: return 0
         with open(cfg_file) as f:
             cfg = yaml.load(f)
     else: cfg = {}
