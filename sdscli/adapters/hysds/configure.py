@@ -19,6 +19,7 @@ from sdscli.prompt_utils import YesNoValidator
 
 
 prompt_style = style_from_dict({
+    Token.Alert: 'bg:#D8060C',
     Token.Username: '#D8060C',
     Token.Param: '#3CFF33',
 })
@@ -281,8 +282,11 @@ def configure():
     # config file
     cfg_file = get_user_config_path()
     if os.path.exists(cfg_file):
-        cont = prompt("%s already exists. Continue [y/n]: " % cfg_file,
-                      validator=YesNoValidator(), default='n') == 'y'
+        cont = prompt(get_prompt_tokens=lambda x: [(Token, cfg_file),
+                                                   (Token, " already exists. "),
+                                                   (Token.Alert, "Customizations will be lost or overwritten!"),
+                                                   (Token, " Continue [y/n]: ")],
+                      validator=YesNoValidator(), default='n', style=prompt_style) == 'y'
         if not cont: return 0
         with open(cfg_file) as f:
             cfg = yaml.load(f)
