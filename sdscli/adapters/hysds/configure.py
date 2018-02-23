@@ -318,11 +318,33 @@ def configure():
                 elif k.endswith('_FQDN'):
                     cfg[k] = cfg['MOZART_FQDN']
                     continue
-            v = prompt(get_prompt_tokens=lambda x: [(Token, "Enter value for "),
-                                                    (Token.Param, "%s" % k), 
-                                                    (Token, ": ")],
-                       default=unicode(cfg.get(k, d)),
-                       style=prompt_style)
+            if k == 'MOZART_RABBIT_PASSWORD':
+                while True:
+                    p1 = prompt(get_prompt_tokens=lambda x: [(Token, "Enter RabbitMQ password for user "),
+                                                            (Token.Username, "%s" % cfg['MOZART_RABBIT_USER']), 
+                                                            (Token, ": ")],
+                               default=unicode(cfg.get(k, d)),
+                               style=prompt_style,
+                               is_password=True)
+                    p2 = prompt(get_prompt_tokens=lambda x: [(Token, "Re-enter RabbitMQ password for user "),
+                                                            (Token.Username, "%s" % cfg['MOZART_RABBIT_USER']), 
+                                                            (Token, ": ")],
+                               default=unicode(cfg.get(k, d)),
+                               style=prompt_style,
+                               is_password=True)
+                    if p1 == p2:
+                        if p1 == "":
+                            print("Password can't be empty.")
+                            continue
+                        v = hashlib.sha224(p1).hexdigest() 
+                        break
+                    print("Passwords don't match.")
+            else:
+                v = prompt(get_prompt_tokens=lambda x: [(Token, "Enter value for "),
+                                                        (Token.Param, "%s" % k), 
+                                                        (Token, ": ")],
+                           default=unicode(cfg.get(k, d)),
+                           style=prompt_style)
             cfg[k] = v
    
     # ops
