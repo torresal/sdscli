@@ -626,6 +626,13 @@ def send_toscaconf(send_file='settings.cfg.tmpl', template_dir=os.path.join(ops_
             run('./db_create.py')
 
 
+def create_user_rules_index():
+    with prefix('source ~/mozart/bin/activate'):
+        with cd('~/mozart/ops/mozart/scripts'):
+            run('./create_user_rules_index.py')
+
+
+
 ##########################
 # self-signed SSL certs
 ##########################
