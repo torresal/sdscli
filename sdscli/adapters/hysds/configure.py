@@ -354,13 +354,13 @@ def configure():
                 p1 = prompt(get_prompt_tokens=lambda x: [(Token, "Enter web interface password for ops user "),
                                                         (Token.Username, "%s" % cfg['OPS_USER']), 
                                                         (Token, ": ")],
-                           default=unicode(cfg.get(k, d)),
+                           default="",
                            style=prompt_style,
                            is_password=True)
                 p2 = prompt(get_prompt_tokens=lambda x: [(Token, "Re-enter web interface password for ops user "),
                                                         (Token.Username, "%s" % cfg['OPS_USER']), 
                                                         (Token, ": ")],
-                           default=unicode(cfg.get(k, d)),
+                           default="",
                            style=prompt_style,
                            is_password=True)
                 if p1 == p2:
