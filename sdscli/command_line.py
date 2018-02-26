@@ -39,9 +39,20 @@ def configure(args):
     logger.debug("got to configure(): %s" % args)
     sds_type = args.type
     logger.debug("sds_type: %s" % sds_type)
-    cfg_func = get_adapter_func(sds_type, 'configure', 'configure') 
-    logger.debug("configure func: %s" % cfg_func)
-    cfg_func()
+    func = get_adapter_func(sds_type, 'configure', 'configure') 
+    logger.debug("func: %s" % func)
+    func()
+
+
+def update(args):
+    """Update SDS components."""
+
+    logger.debug("got to update(): %s" % args)
+    sds_type = args.type
+    logger.debug("sds_type: %s" % sds_type)
+    func = get_adapter_func(sds_type, 'update', 'update') 
+    logger.debug("func: %s" % func)
+    func(args.component)
 
 
 def job_list(args):
@@ -77,6 +88,14 @@ def main():
     parser_configure.add_argument('type', default='hysds', const='hysds', nargs='?',
                                   choices=['hysds', 'sdskit'])
     parser_configure.set_defaults(func=configure)
+
+    # parser for update
+    parser_update = subparsers.add_parser('update', help="update SDS components")
+    parser_update.add_argument('--type', '-t', default='hysds', const='hysds', nargs='?',
+                                  choices=['hysds', 'sdskit'])
+    parser_update.add_argument('component', choices=['mozart', 'grq', 'metrics', 
+                               'factotum', 'ci', 'verdi', 'all'])
+    parser_update.set_defaults(func=update)
 
     # parser for jobs
     parser_job = subparsers.add_parser('job', help="SDS job subcommand")

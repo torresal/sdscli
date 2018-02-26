@@ -12,6 +12,12 @@ def get_user_config_path():
     return os.path.expanduser(os.path.join('~', '.sds', 'config'))
 
 
+def get_user_files_path():
+    """Return path to user configuration templates and files."""
+
+    return os.path.expanduser(os.path.join('~', '.sds', 'files'))
+
+
 class YamlConfError(Exception):
     """Exception class for YamlConf class."""
     pass

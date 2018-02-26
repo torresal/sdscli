@@ -5,7 +5,9 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 from __future__ import print_function
 
-import os, yaml, pwd, hashlib, traceback
+import os, yaml, pwd, shutil, hashlib, traceback
+from pkg_resources import resource_filename
+from glob import glob
 
 from prompt_toolkit.shortcuts import prompt, print_tokens
 from prompt_toolkit.styles import style_from_dict
@@ -13,7 +15,7 @@ from prompt_toolkit.validation import Validator, ValidationError
 from pygments.token import Token
 
 from sdscli.log_utils import logger
-from sdscli.conf_utils import get_user_config_path, SettingsConf
+from sdscli.conf_utils import get_user_config_path, get_user_files_path, SettingsConf
 from sdscli.os_utils import validate_dir
 from sdscli.prompt_utils import YesNoValidator
 
@@ -274,10 +276,29 @@ CFG_DEFAULTS = {
 }
 
 
+def copy_files():
+    """Copy templates and files to user config files."""
+
+    files_path = get_user_files_path()
+    logger.debug('files_path: %s' % files_path)
+    validate_dir(files_path, mode=0700)
+    sds_files_path = resource_filename('sdscli', os.path.join('adapters', 'hysds', 'files'))
+    sds_files = glob(os.path.join(sds_files_path, '*'))
+    for sds_file in sds_files:
+        user_file = os.path.join(files_path, os.path.basename(sds_file))
+        if os.path.isdir(sds_file) and not os.path.isdir(user_file):
+            shutil.copytree(sds_file, user_file)
+            logger.debug("Copying dir %s to %s" % (sds_file, user_file))
+        elif os.path.isfile(sds_file) and not os.path.isfile(user_file):
+            shutil.copy(sds_file, user_file)
+            logger.debug("Copying file %s to %s" % (sds_file, user_file))
+
+
 def configure():
     """Configure SDS config file for HySDS."""
 
-    logger.debug("Got here for HySDS")
+    # copy templates/files
+    copy_files()
 
     # config file
     cfg_file = get_user_config_path()
