@@ -336,7 +336,7 @@ def configure():
                         if p1 == "":
                             print("Password can't be empty.")
                             continue
-                        v = hashlib.sha224(p1).hexdigest() 
+                        v = p1
                         break
                     print("Passwords don't match.")
             else:
