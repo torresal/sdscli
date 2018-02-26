@@ -12,7 +12,7 @@ from fabric.contrib.files import upload_template, exists
 from fabric.contrib.project import rsync_project
 
 from sdscli.log_utils import logger
-from sdscli.conf_utils import get_user_config_path
+from sdscli.conf_utils import get_user_config_path, get_user_files_path
 
 
 # ssh_opts and extra_opts for rsync and rsync_project
@@ -195,7 +195,7 @@ def sudo_rm_rf(path):
 
 
 def send_template(tmpl, dest, tmpl_dir=None):
-    if tmpl_dir is None: tmpl_dir = os.path.join(ops_dir, 'hysds_cluster_setup/files')
+    if tmpl_dir is None: tmpl_dir = get_user_files_path()
     else: tmpl_dir = os.path.expanduser(tmpl_dir)
     upload_template(tmpl, dest, use_jinja=True, context=get_context(), template_dir=tmpl_dir)
 
@@ -515,7 +515,7 @@ def add_ci_job(repo, proto, uid=1001, gid=1001, branch=None, release=False):
         else:
             raise RuntimeError("Unrecognized storage type for containers: %s" % proto)
         upload_template(config_tmpl, "tmp-jenkins-upload", use_jinja=True, context=ctx,
-                        template_dir=os.path.join(ops_dir, 'hysds_cluster_setup/files'))
+                        template_dir=get_user_files_path())
         cp_rp("tmp-jenkins-upload", dest_file)
         run("rm tmp-jenkins-upload")
 
@@ -603,7 +603,7 @@ def send_figaroconf():
     #upload_template('settings.cfg.tmpl', dest_file, use_jinja=True, context=get_context('mozart'),
     #                template_dir=os.path.join(ops_dir, 'mozart/ops/figaro/settings'))
     upload_template('figaro_settings.cfg.tmpl', dest_file, use_jinja=True, context=get_context('mozart'),
-                    template_dir=os.path.join(ops_dir, 'hysds_cluster_setup/files'))
+                    template_dir=get_user_files_path())
     with prefix('source ~/mozart/bin/activate'):
         with cd('~/mozart/ops/figaro'):
             mkdir('~/mozart/ops/figaro/data', context['OPS_USER'], context['OPS_USER'])
@@ -644,7 +644,7 @@ def ensure_ssl(node_type):
         mkdir('ssl', context['OPS_USER'], context['OPS_USER'])
         upload_template('ssl_server.cnf', 'ssl/server.cnf', use_jinja=True,
                         context={ 'commonName': commonName },
-                        template_dir=os.path.join(ops_dir, 'hysds_cluster_setup/files'))
+                        template_dir=get_user_files_path())
         with cd('ssl'):
             with settings(prompts=prompts):
                 run('openssl genrsa -des3 -out server.key 1024')
@@ -678,13 +678,13 @@ def send_awscreds():
     if exists('.aws'): run('rm -rf .aws')
     mkdir('.aws', context['OPS_USER'], context['OPS_USER'])
     upload_template('aws_config', '.aws/config', use_jinja=True, context=ctx,
-                    template_dir=os.path.join(ops_dir, 'hysds_cluster_setup/files'))
+                    template_dir=get_user_files_path())
     upload_template('aws_credentials', '.aws/credentials', use_jinja=True, context=ctx,
-                    template_dir=os.path.join(ops_dir, 'hysds_cluster_setup/files'))
+                    template_dir=get_user_files_path())
     upload_template('boto', '.boto', use_jinja=True, context=ctx,
-                    template_dir=os.path.join(ops_dir, 'hysds_cluster_setup/files'))
+                    template_dir=get_user_files_path())
     upload_template('s3cfg', '.s3cfg', use_jinja=True, context=ctx,
-                    template_dir=os.path.join(ops_dir, 'hysds_cluster_setup/files'))
+                    template_dir=get_user_files_path())
 
 
 ##########################
@@ -695,8 +695,8 @@ def send_project_config(project):
     ctx = get_context()
     ctx.update({'project': project})
     upload_template('install.sh', '~/verdi/ops/install.sh', use_jinja=True, context=ctx,
-                    template_dir=os.path.join(ops_dir, 'hysds_cluster_setup/files'))
+                    template_dir=get_user_files_path())
     upload_template('datasets.json.tmpl.asg', '~/verdi/etc/datasets.json',
-                    use_jinja=True, context=ctx, template_dir=os.path.join(ops_dir, 'hysds_cluster_setup/files'))
+                    use_jinja=True, context=ctx, template_dir=get_user_files_path())
     upload_template('supervisord.conf.tmpl', '~/verdi/etc/supervisord.conf.tmpl',
-                    use_jinja=True, context=ctx, template_dir=os.path.join(ops_dir, 'hysds_cluster_setup/files'))
+                    use_jinja=True, context=ctx, template_dir=get_user_files_path())
