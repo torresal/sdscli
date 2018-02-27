@@ -315,9 +315,25 @@ def update_grq(conf, comp='grq'):
 def update_comp(comp, conf):
     """Update component."""
 
-    if comp in ['grq', 'all']: update_grq(conf)
-    if comp in ['mozart', 'all']: update_mozart(conf)
-    if comp in ['metrics', 'all']: update_metrics(conf)
+    # if all, create progress bar
+    if comp == 'all':
+    
+        # progress bar
+        with tqdm(total=3) as bar:
+            set_bar_desc(bar, "Updating grq")
+            update_grq(conf)
+            bar.update()
+            set_bar_desc(bar, "Updating mozart")
+            update_mozart(conf)
+            bar.update()
+            set_bar_desc(bar, "Updating metrics")
+            update_metrics(conf)
+            bar.update()
+            set_bar_desc(bar, "Updated all")
+    else:
+        if comp == 'grq': update_grq(conf)
+        if comp == 'mozart': update_mozart(conf)
+        if comp == 'metrics': update_metrics(conf)
 
 
 def update(comp, debug=False):
