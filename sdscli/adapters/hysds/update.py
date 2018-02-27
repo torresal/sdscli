@@ -47,7 +47,7 @@ def update_mozart(conf, comp='mozart'):
         bar.update()
 
         # update reqs
-        set_bar_desc(bar, 'Updating reqs')
+        set_bar_desc(bar, 'Updating HySDS core')
         execute(fab.pip_install_with_req, 'mozart', '~/mozart/ops/osaka', roles=[comp])
         bar.update()
         execute(fab.pip_install_with_req, 'mozart', '~/mozart/ops/prov_es', roles=[comp])
@@ -161,7 +161,7 @@ def update_metrics(conf, comp='metrics'):
         bar.update()
 
         # update reqs
-        set_bar_desc(bar, 'Updating reqs')
+        set_bar_desc(bar, 'Updating HySDS core')
         execute(fab.pip_install_with_req, 'metrics', '~/metrics/ops/osaka', roles=[comp])
         bar.update()
         execute(fab.pip_install_with_req, 'metrics', '~/metrics/ops/prov_es', roles=[comp])
