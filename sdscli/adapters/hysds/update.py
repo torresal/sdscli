@@ -41,7 +41,7 @@ def update_mozart(conf, comp='mozart'):
     # progress bar
     with tqdm(total=20) as bar:
 
-        # stop services on mozart
+        # stop services
         set_bar_desc(bar, 'Stopping mozartd')
         execute(fab.mozartd_stop, roles=[comp])
         bar.update()
@@ -129,7 +129,9 @@ def update_mozart(conf, comp='mozart'):
         bar.update()
 
         # expose hysds log dir via webdav
+        #set_bar_desc(bar, 'Expose logs')
         #execute(fab.ln_sf, '~/mozart/log', '/data/work/log', roles=[comp])
+        #bar.update()
 
         # ship netrc
         set_bar_desc(bar, 'Configuring netrc')
@@ -150,7 +152,7 @@ def update_metrics(conf, comp='metrics'):
     # progress bar
     with tqdm(total=18) as bar:
 
-        # stop services on metrics
+        # stop services
         set_bar_desc(bar, 'Stopping metricsd')
         execute(fab.metricsd_stop, roles=[comp])
         bar.update()
@@ -217,9 +219,103 @@ def update_metrics(conf, comp='metrics'):
         set_bar_desc(bar, 'Updated metrics')
 
 
+def update_grq(conf, comp='grq'):
+    """"Update grq component."""
+
+    # progress bar
+    with tqdm(total=18) as bar:
+
+        # stop services
+        set_bar_desc(bar, 'Stopping grqd')
+        execute(fab.grqd_stop, roles=[comp])
+        bar.update()
+
+        # update reqs
+        set_bar_desc(bar, 'Updating HySDS core')
+        execute(fab.pip_install_with_req, 'sciflo', '~/sciflo/ops/osaka', roles=[comp])
+        bar.update()
+        execute(fab.pip_install_with_req, 'sciflo', '~/sciflo/ops/prov_es', roles=[comp])
+        bar.update()
+        execute(fab.pip_install_with_req, 'sciflo', '~/sciflo/ops/hysds_commons', roles=[comp])
+        bar.update()
+        execute(fab.pip_install_with_req, 'sciflo', '~/sciflo/ops/hysds/third_party/celery-v3.1.25.pqueue', roles=[comp])
+        bar.update()
+        execute(fab.pip_install_with_req, 'sciflo', '~/sciflo/ops/hysds', roles=[comp])
+        bar.update()
+        execute(fab.pip_install_with_req, 'sciflo', '~/sciflo/ops/sciflo', roles=[comp])
+        bar.update()
+        execute(fab.pip_install_with_req, 'sciflo', '~/sciflo/ops/grq2', roles=[comp])
+        bar.update()
+        execute(fab.pip_install_with_req, 'sciflo', '~/sciflo/ops/tosca', roles=[comp])
+        bar.update()
+
+        # update celery config
+        set_bar_desc(bar, 'Updating celery config')
+        execute(fab.rm_rf, '~/sciflo/ops/hysds/celeryconfig.py', roles=[comp])
+        execute(fab.rm_rf, '~/sciflo/ops/hysds/celeryconfig.pyc', roles=[comp])
+        execute(fab.send_celeryconf, 'grq', roles=[comp])
+        bar.update()
+
+        # update grq2 config
+        set_bar_desc(bar, 'Updating grq2 config')
+        execute(fab.rm_rf, '~/sciflo/ops/grq2/settings.cfg', roles=[comp])
+        execute(fab.send_grq2conf, roles=[comp])
+        bar.update()
+
+        # update tosca config
+        set_bar_desc(bar, 'Updating tosca config')
+        execute(fab.rm_rf, '~/sciflo/ops/tosca/settings.cfg', roles=[comp])
+        execute(fab.send_toscaconf, 'tosca_settings.cfg.tmpl', roles=[comp])
+        execute(fab.ln_sf, '~/sciflo/ops/tosca/configs/actions_config.json.example', 
+                '~/sciflo/ops/tosca/actions_config.json', roles=[comp])
+        bar.update()
+
+        # update supervisor config
+        set_bar_desc(bar, 'Updating supervisor config')
+        execute(fab.rm_rf, '~/sciflo/etc/supervisord.conf', roles=[comp])
+        execute(fab.send_template, 'supervisord.conf.grq', '~/sciflo/etc/supervisord.conf', 
+                '~/mozart/ops/hysds/configs/supervisor', roles=[comp])
+        bar.update()
+
+        #update datasets config; overwrite datasets config with domain-specific config
+        set_bar_desc(bar, 'Updating datasets config')
+        execute(fab.rm_rf, '~/sciflo/etc/datasets.json', roles=[comp])
+        execute(fab.send_template, 'datasets.json', '~/sciflo/etc/datasets.json', roles=[comp])
+        bar.update()
+
+        # ensure self-signed SSL certs exist
+        set_bar_desc(bar, 'Configuring SSL')
+        execute(fab.ensure_ssl, 'grq', roles=[comp])
+        bar.update()
+
+        # link ssl certs to apps
+        execute(fab.ln_sf, '~/ssl/server.key', '~/sciflo/ops/grq2/server.key', roles=[comp])
+        execute(fab.ln_sf, '~/ssl/server.pem', '~/sciflo/ops/grq2/server.pem', roles=[comp])
+        execute(fab.ln_sf, '~/ssl/server.key', '~/sciflo/ops/tosca/server.key', roles=[comp])
+        execute(fab.ln_sf, '~/ssl/server.pem', '~/sciflo/ops/tosca/server.pem', roles=[comp])
+        bar.update()
+
+        # expose hysds log dir via webdav
+        #set_bar_desc(bar, 'Expose logs')
+        #execute(fab.ln_sf, '~/sciflo/log', '/data/work/log', roles=[comp])
+        #bar.update()
+
+        # update ES template
+        set_bar_desc(bar, 'Update ES template')
+        execute(fab.install_es_template, roles=[comp])
+        bar.update()
+        
+        # ship AWS creds
+        set_bar_desc(bar, 'Configuring AWS creds')
+        execute(fab.send_awscreds, roles=[comp])
+        bar.update()
+        set_bar_desc(bar, 'Updated grq')
+
+
 def update_comp(comp, conf):
     """Update component."""
 
+    if comp in ['grq', 'all']: update_grq(conf)
     if comp in ['mozart', 'all']: update_mozart(conf)
     if comp in ['metrics', 'all']: update_metrics(conf)
 

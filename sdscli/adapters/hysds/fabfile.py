@@ -616,7 +616,7 @@ def send_grq2conf():
                     template_dir=os.path.join(ops_dir, 'mozart/ops/grq2/config'))
 
 
-def send_toscaconf(send_file='settings.cfg.tmpl', template_dir=os.path.join(ops_dir, 'mozart/ops/tosca/configs')):
+def send_toscaconf(send_file='settings.cfg.tmpl', template_dir=get_user_files_path()):
     tmpl_dir = os.path.expanduser(template_dir)
     dest_file = '~/sciflo/ops/tosca/settings.cfg'
     upload_template(send_file, dest_file, use_jinja=True, context=get_context('grq'),
