@@ -417,11 +417,11 @@ def metricsd_stop():
 ##########################
 
 def kill_hung():
-    try: run('ps x | grep [j]ob_worker | awk \'{print $1}\' | xargs kill -TERM')
+    try: run('ps x | grep [j]ob_worker | awk \'{print $1}\' | xargs kill -TERM', quiet=True)
     except: pass
-    try: run('ps x | grep [s]flExec | awk \'{print $1}\' | xargs kill -TERM')
+    try: run('ps x | grep [s]flExec | awk \'{print $1}\' | xargs kill -TERM', quiet=True)
     except: pass
-    try: run('ps x | grep [s]flExec | awk \'{print $1}\' | xargs kill -KILL')
+    try: run('ps x | grep [s]flExec | awk \'{print $1}\' | xargs kill -KILL', quiet=True)
     except: pass
     ps_x()
 

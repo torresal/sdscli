@@ -15,7 +15,7 @@ from prompt_toolkit.validation import Validator, ValidationError
 from pygments.token import Token
 
 from sdscli.log_utils import logger
-from sdscli.conf_utils import SettingsConf
+from sdscli.conf_utils import get_user_files_path, SettingsConf
 from sdscli.os_utils import validate_dir
 from sdscli.prompt_utils import YesNoValidator
 
@@ -39,7 +39,7 @@ def update_mozart(conf, comp='mozart'):
     """"Update mozart component."""
 
     # progress bar
-    with tqdm(total=20) as bar:
+    with tqdm(total=21) as bar:
 
         # stop services
         set_bar_desc(bar, 'Stopping mozartd')
@@ -129,9 +129,10 @@ def update_mozart(conf, comp='mozart'):
         bar.update()
 
         # expose hysds log dir via webdav
-        #set_bar_desc(bar, 'Expose logs')
-        #execute(fab.ln_sf, '~/mozart/log', '/data/work/log', roles=[comp])
-        #bar.update()
+        set_bar_desc(bar, 'Expose logs')
+        execute(fab.mkdir, '/data/work', None, None, roles=[comp])
+        execute(fab.ln_sf, '~/mozart/log', '/data/work/log', roles=[comp])
+        bar.update()
 
         # ship netrc
         set_bar_desc(bar, 'Configuring netrc')
@@ -150,7 +151,7 @@ def update_metrics(conf, comp='metrics'):
     """"Update metrics component."""
 
     # progress bar
-    with tqdm(total=18) as bar:
+    with tqdm(total=19) as bar:
 
         # stop services
         set_bar_desc(bar, 'Stopping metricsd')
@@ -159,6 +160,7 @@ def update_metrics(conf, comp='metrics'):
 
         # update
         set_bar_desc(bar, 'Syncing packages')
+        execute(fab.rm_rf, '~/metrics/ops/*', roles=[comp])
         execute(fab.rsync_code, 'metrics', roles=[comp])
         bar.update()
 
@@ -212,6 +214,12 @@ def update_metrics(conf, comp='metrics'):
         execute(fab.send_template, 'kibana.yml', '~/kibana/config/kibana.yml', roles=[comp])
         bar.update()
 
+        # expose hysds log dir via webdav
+        set_bar_desc(bar, 'Expose logs')
+        execute(fab.mkdir, '/data/work', None, None, roles=[comp])
+        execute(fab.ln_sf, '~/metrics/log', '/data/work/log', roles=[comp])
+        bar.update()
+
         # ship AWS creds
         set_bar_desc(bar, 'Configuring AWS creds')
         execute(fab.send_awscreds, roles=[comp])
@@ -223,11 +231,18 @@ def update_grq(conf, comp='grq'):
     """"Update grq component."""
 
     # progress bar
-    with tqdm(total=18) as bar:
+    with tqdm(total=20) as bar:
 
         # stop services
         set_bar_desc(bar, 'Stopping grqd')
         execute(fab.grqd_stop, roles=[comp])
+        bar.update()
+
+        # update
+        set_bar_desc(bar, 'Syncing packages')
+        execute(fab.rm_rf, '~/sciflo/ops/*', roles=[comp])
+        execute(fab.rsync_code, 'grq', 'sciflo', roles=[comp])
+        execute(fab.pip_upgrade, 'gunicorn', 'sciflo', roles=[comp]) # ensure latest gunicorn
         bar.update()
 
         # update reqs
@@ -296,9 +311,10 @@ def update_grq(conf, comp='grq'):
         bar.update()
 
         # expose hysds log dir via webdav
-        #set_bar_desc(bar, 'Expose logs')
-        #execute(fab.ln_sf, '~/sciflo/log', '/data/work/log', roles=[comp])
-        #bar.update()
+        set_bar_desc(bar, 'Expose logs')
+        execute(fab.mkdir, '/data/work', None, None, roles=[comp])
+        execute(fab.ln_sf, '~/sciflo/log', '/data/work/log', roles=[comp])
+        bar.update()
 
         # update ES template
         set_bar_desc(bar, 'Update ES template')
@@ -312,6 +328,80 @@ def update_grq(conf, comp='grq'):
         set_bar_desc(bar, 'Updated grq')
 
 
+def update_factotum(conf, comp='factotum'):
+    """"Update factotum component."""
+
+    # progress bar
+    with tqdm(total=13) as bar:
+
+        # stop services
+        set_bar_desc(bar, 'Stopping verdid')
+        execute(fab.verdid_stop, roles=[comp])
+        execute(fab.kill_hung, roles=[comp])
+        bar.update()
+
+        # update
+        set_bar_desc(bar, 'Syncing packages')
+        execute(fab.rm_rf, '~/verdi/ops/*', roles=[comp])
+        execute(fab.rsync_code, 'factotum', 'verdi', roles=[comp])
+        execute(fab.set_spyddder_settings, roles=[comp])
+        bar.update()
+
+        # update reqs
+        set_bar_desc(bar, 'Updating HySDS core')
+        execute(fab.pip_install_with_req, 'verdi', '~/verdi/ops/osaka', roles=[comp])
+        bar.update()
+        execute(fab.pip_install_with_req, 'verdi', '~/verdi/ops/prov_es', roles=[comp])
+        bar.update()
+        execute(fab.pip_install_with_req, 'verdi', '~/verdi/ops/hysds_commons', roles=[comp])
+        bar.update()
+        execute(fab.pip_install_with_req, 'verdi', '~/verdi/ops/hysds/third_party/celery-v3.1.25.pqueue', roles=[comp])
+        bar.update()
+        execute(fab.pip_install_with_req, 'verdi', '~/verdi/ops/hysds', roles=[comp])
+        bar.update()
+        execute(fab.pip_install_with_req, 'verdi', '~/verdi/ops/sciflo', roles=[comp])
+        bar.update()
+
+        # update celery config
+        set_bar_desc(bar, 'Updating celery config')
+        execute(fab.rm_rf, '~/verdi/ops/hysds/celeryconfig.py', roles=[comp])
+        execute(fab.rm_rf, '~/verdi/ops/hysds/celeryconfig.pyc', roles=[comp])
+        execute(fab.send_celeryconf, 'verdi', roles=[comp])
+        bar.update()
+
+        # update supervisor config
+        set_bar_desc(bar, 'Updating supervisor config')
+        execute(fab.rm_rf, '~/verdi/etc/supervisord.conf', roles=[comp])
+        execute(fab.send_template, 'supervisord.conf.factotum', '~/verdi/etc/supervisord.conf', 
+                '~/mozart/ops/hysds/configs/supervisor', roles=[comp])
+        bar.update()
+
+        #update datasets config; overwrite datasets config with domain-specific config
+        set_bar_desc(bar, 'Updating datasets config')
+        execute(fab.rm_rf, '~/verdi/etc/datasets.json', roles=[comp])
+        execute(fab.send_template, 'datasets.json', '~/verdi/etc/datasets.json', roles=[comp])
+        bar.update()
+
+        # expose hysds log dir via webdav
+        set_bar_desc(bar, 'Expose logs')
+        execute(fab.mkdir, '/data/work', None, None, roles=[comp])
+        execute(fab.ln_sf, '~/verdi/log', '/data/work/log', roles=[comp])
+        bar.update()
+
+        # ship netrc
+        netrc = os.path.join(get_user_files_path(), 'netrc')
+        if os.path.exists(netrc):
+            set_bar_desc(bar, 'Configuring netrc')
+            execute(fab.copy, netrc, '.netrc', roles=[comp])
+            execute(fab.chmod, 600, '.netrc', roles=[comp])
+
+        # ship AWS creds
+        set_bar_desc(bar, 'Configuring AWS creds')
+        execute(fab.send_awscreds, roles=[comp])
+        bar.update()
+        set_bar_desc(bar, 'Updated factotum')
+
+
 def update_comp(comp, conf):
     """Update component."""
 
@@ -319,7 +409,7 @@ def update_comp(comp, conf):
     if comp == 'all':
     
         # progress bar
-        with tqdm(total=3) as bar:
+        with tqdm(total=4) as bar:
             set_bar_desc(bar, "Updating grq")
             update_grq(conf)
             bar.update()
@@ -329,11 +419,15 @@ def update_comp(comp, conf):
             set_bar_desc(bar, "Updating metrics")
             update_metrics(conf)
             bar.update()
+            set_bar_desc(bar, "Updating factotum")
+            update_factotum(conf)
+            bar.update()
             set_bar_desc(bar, "Updated all")
     else:
         if comp == 'grq': update_grq(conf)
         if comp == 'mozart': update_mozart(conf)
         if comp == 'metrics': update_metrics(conf)
+        if comp == 'factotum': update_factotum(conf)
 
 
 def update(comp, debug=False):
