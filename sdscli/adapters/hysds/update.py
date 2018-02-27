@@ -141,48 +141,80 @@ def update_mozart(conf, comp='mozart'):
         set_bar_desc(bar, 'Configuring AWS creds')
         execute(fab.send_awscreds, roles=[comp])
         bar.update()
+        set_bar_desc(bar, 'Updated mozart')
 
 
 def update_metrics(conf, comp='metrics'):
     """"Update metrics component."""
 
-    # stop services on metrics
-    execute(fab.metricsd_stop, roles=[comp])
+    # progress bar
+    with tqdm(total=18) as bar:
 
-    # update
-    execute(fab.rsync_code, 'metrics', roles=[comp])
+        # stop services on metrics
+        set_bar_desc(bar, 'Stopping metricsd')
+        execute(fab.metricsd_stop, roles=[comp])
+        bar.update()
 
-    # update reqs
-    execute(fab.pip_install_with_req, 'metrics', '~/metrics/ops/osaka', roles=[comp])
-    execute(fab.pip_install_with_req, 'metrics', '~/metrics/ops/prov_es', roles=[comp])
-    execute(fab.pip_install_with_req, 'metrics', '~/metrics/ops/hysds_commons', roles=[comp])
-    execute(fab.pip_install_with_req, 'metrics', '~/metrics/ops/hysds/third_party/celery-v3.1.25.pqueue', roles=[comp])
-    execute(fab.pip_install_with_req, 'metrics', '~/metrics/ops/hysds', roles=[comp])
-    execute(fab.pip_install_with_req, 'metrics', '~/metrics/ops/sciflo', roles=[comp])
+        # update
+        set_bar_desc(bar, 'Syncing packages')
+        execute(fab.rsync_code, 'metrics', roles=[comp])
+        bar.update()
 
-    # update celery config
-    execute(fab.rm_rf, '~/metrics/ops/hysds/celeryconfig.py', roles=[comp])
-    execute(fab.rm_rf, '~/metrics/ops/hysds/celeryconfig.pyc', roles=[comp])
-    execute(fab.send_celeryconf, 'metrics', roles=[comp])
+        # update reqs
+        set_bar_desc(bar, 'Updating reqs')
+        execute(fab.pip_install_with_req, 'metrics', '~/metrics/ops/osaka', roles=[comp])
+        bar.update()
+        execute(fab.pip_install_with_req, 'metrics', '~/metrics/ops/prov_es', roles=[comp])
+        bar.update()
+        execute(fab.pip_install_with_req, 'metrics', '~/metrics/ops/hysds_commons', roles=[comp])
+        bar.update()
+        execute(fab.pip_install_with_req, 'metrics', '~/metrics/ops/hysds/third_party/celery-v3.1.25.pqueue', roles=[comp])
+        bar.update()
+        execute(fab.pip_install_with_req, 'metrics', '~/metrics/ops/hysds', roles=[comp])
+        bar.update()
+        execute(fab.pip_install_with_req, 'metrics', '~/metrics/ops/sciflo', roles=[comp])
+        bar.update()
 
-    # update supervisor config
-    execute(fab.rm_rf, '~/metrics/etc/supervisord.conf', roles=[comp])
-    execute(fab.send_template, 'supervisord.conf.metrics', '~/metrics/etc/supervisord.conf', 
-            '~/mozart/ops/hysds/configs/supervisor', roles=[comp])
+        # update celery config
+        set_bar_desc(bar, 'Updating celery config')
+        execute(fab.rm_rf, '~/metrics/ops/hysds/celeryconfig.py', roles=[comp])
+        bar.update()
+        execute(fab.rm_rf, '~/metrics/ops/hysds/celeryconfig.pyc', roles=[comp])
+        bar.update()
+        execute(fab.send_celeryconf, 'metrics', roles=[comp])
+        bar.update()
 
-    #update datasets config; overwrite datasets config with domain-specific config
-    execute(fab.rm_rf, '~/metrics/etc/datasets.json', roles=[comp])
-    execute(fab.send_template, 'datasets.json', '~/metrics/etc/datasets.json', roles=[comp])
+        # update supervisor config
+        set_bar_desc(bar, 'Updating supervisor config')
+        execute(fab.rm_rf, '~/metrics/etc/supervisord.conf', roles=[comp])
+        bar.update()
+        execute(fab.send_template, 'supervisord.conf.metrics', '~/metrics/etc/supervisord.conf', 
+                '~/mozart/ops/hysds/configs/supervisor', roles=[comp])
+        bar.update()
 
-    # ship logstash shipper configs
-    execute(fab.send_shipper_conf, 'metrics', '/home/hysdsops/metrics/log', conf.get('MOZART_ES_CLUSTER'),
-            conf.get('MOZART_PVT_IP'), conf.get('METRICS_ES_CLUSTER'), '127.0.0.1', roles=[comp])
+        #update datasets config; overwrite datasets config with domain-specific config
+        set_bar_desc(bar, 'Updating datasets config')
+        execute(fab.rm_rf, '~/metrics/etc/datasets.json', roles=[comp])
+        bar.update()
+        execute(fab.send_template, 'datasets.json', '~/metrics/etc/datasets.json', roles=[comp])
+        bar.update()
 
-    # ship kibana config
-    execute(fab.send_template, 'kibana.yml', '~/kibana/config/kibana.yml', roles=[comp])
+        # ship logstash shipper configs
+        set_bar_desc(bar, 'Updating logstash shipper config')
+        execute(fab.send_shipper_conf, 'metrics', '/home/hysdsops/metrics/log', conf.get('MOZART_ES_CLUSTER'),
+                conf.get('MOZART_PVT_IP'), conf.get('METRICS_ES_CLUSTER'), '127.0.0.1', roles=[comp])
+        bar.update()
 
-    # ship AWS creds
-    execute(fab.send_awscreds, roles=[comp])
+        # ship kibana config
+        set_bar_desc(bar, 'Updating kibana config')
+        execute(fab.send_template, 'kibana.yml', '~/kibana/config/kibana.yml', roles=[comp])
+        bar.update()
+
+        # ship AWS creds
+        set_bar_desc(bar, 'Configuring AWS creds')
+        execute(fab.send_awscreds, roles=[comp])
+        bar.update()
+        set_bar_desc(bar, 'Updated metrics')
 
 
 def update_comp(comp, conf):
