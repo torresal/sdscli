@@ -285,13 +285,16 @@ def copy_files():
     sds_files_path = resource_filename('sdscli', os.path.join('adapters', 'hysds', 'files'))
     sds_files = glob(os.path.join(sds_files_path, '*'))
     for sds_file in sds_files:
-        user_file = os.path.join(files_path, os.path.basename(sds_file))
-        if os.path.isdir(sds_file) and not os.path.isdir(user_file):
-            shutil.copytree(sds_file, user_file)
-            logger.debug("Copying dir %s to %s" % (sds_file, user_file))
-        elif os.path.isfile(sds_file) and not os.path.isfile(user_file):
-            shutil.copy(sds_file, user_file)
-            logger.debug("Copying file %s to %s" % (sds_file, user_file))
+        if os.path.basename(sds_file) == 'cluster.py':
+            shutil.copy(sds_file, os.path.dirname(get_user_config_path()))
+        else:    
+            user_file = os.path.join(files_path, os.path.basename(sds_file))
+            if os.path.isdir(sds_file) and not os.path.isdir(user_file):
+                shutil.copytree(sds_file, user_file)
+                logger.debug("Copying dir %s to %s" % (sds_file, user_file))
+            elif os.path.isfile(sds_file) and not os.path.isfile(user_file):
+                shutil.copy(sds_file, user_file)
+                logger.debug("Copying file %s to %s" % (sds_file, user_file))
 
 
 def configure():
