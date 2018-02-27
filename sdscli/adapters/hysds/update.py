@@ -28,6 +28,120 @@ prompt_style = style_from_dict({
 })
 
 
+def update_mozart(conf, comp='mozart'):
+    """"Update mozart component."""
+
+    # stop services on mozart
+    execute(fab.mozartd_stop, roles=[comp])
+
+    # update reqs
+    execute(fab.pip_install_with_req, 'mozart', '~/mozart/ops/osaka', roles=[comp])
+    execute(fab.pip_install_with_req, 'mozart', '~/mozart/ops/prov_es', roles=[comp])
+    execute(fab.pip_install_with_req, 'mozart', '~/mozart/ops/hysds_commons', roles=[comp])
+    execute(fab.pip_install_with_req, 'mozart', '~/mozart/ops/hysds/third_party/celery-v3.1.25.pqueue', roles=[comp])
+    execute(fab.pip_install_with_req, 'mozart', '~/mozart/ops/hysds', roles=[comp])
+    execute(fab.pip_install_with_req, 'mozart', '~/mozart/ops/sciflo', roles=[comp])
+    execute(fab.pip_install_with_req, 'mozart', '~/mozart/ops/mozart', roles=[comp])
+
+    # update celery config
+    execute(fab.rm_rf, '~/mozart/ops/hysds/celeryconfig.py', roles=[comp])
+    execute(fab.rm_rf, '~/mozart/ops/hysds/celeryconfig.pyc', roles=[comp])
+    execute(fab.send_celeryconf, 'mozart', roles=[comp])
+
+    # update supervisor config
+    execute(fab.rm_rf, '~/mozart/etc/supervisord.conf', roles=[comp])
+    execute(fab.send_template, 'supervisord.conf.mozart', '~/mozart/etc/supervisord.conf', 
+            '~/mozart/ops/hysds/configs/supervisor', roles=[comp])
+
+    # update orchestrator config
+    execute(fab.rm_rf, '~/mozart/etc/orchestrator_*.json', roles=[comp])
+    execute(fab.copy, '~/mozart/ops/hysds/configs/orchestrator/orchestrator_jobs.json',
+            '~/mozart/etc/orchestrator_jobs.json', roles=[comp])
+    execute(fab.copy, '~/mozart/ops/hysds/configs/orchestrator/orchestrator_datasets.json',
+            '~/mozart/etc/orchestrator_datasets.json', roles=[comp])
+
+    #update datasets config; overwrite datasets config with domain-specific config
+    execute(fab.rm_rf, '~/mozart/etc/datasets.json', roles=[comp])
+    execute(fab.send_template, 'datasets.json', '~/mozart/etc/datasets.json', roles=[comp])
+
+    # ship logstash shipper configs
+    execute(fab.send_shipper_conf, 'mozart', '/home/hysdsops/mozart/log', conf.get('MOZART_ES_CLUSTER'),
+            '127.0.0.1', conf.get('METRICS_ES_CLUSTER'), conf.get('METRICS_PVT_IP'), roles=[comp])
+
+    # update mozart config
+    execute(fab.rm_rf, '~/mozart/ops/mozart/settings.cfg', roles=[comp])
+    execute(fab.send_mozartconf, roles=[comp])
+    execute(fab.rm_rf, '~/mozart/ops/mozart/actions_config.json', roles=[comp])
+    execute(fab.copy, '~/mozart/ops/mozart/configs/actions_config.json.example', 
+            '~/mozart/ops/mozart/actions_config.json', roles=[comp])
+
+    # update figaro config
+    execute(fab.rm_rf, '~/mozart/ops/figaro/settings.cfg', roles=[comp])
+    execute(fab.send_figaroconf, roles=[comp])
+
+    # create user_rules index
+    execute(fab.create_user_rules_index, roles=[comp])
+
+    # ensure self-signed SSL certs exist
+    execute(fab.ensure_ssl, 'mozart', roles=[comp])
+
+    # link ssl certs to apps
+    execute(fab.ln_sf, '~/ssl/server.key', '~/mozart/ops/mozart/server.key', roles=[comp])
+    execute(fab.ln_sf, '~/ssl/server.pem', '~/mozart/ops/mozart/server.pem', roles=[comp])
+
+    # expose hysds log dir via webdav
+    #execute(fab.ln_sf, '~/mozart/log', '/data/work/log', roles=[comp])
+
+    # ship netrc
+    execute(fab.send_template, 'netrc.mozart', '.netrc', roles=[comp])
+    execute(fab.chmod, 600, '.netrc', roles=[comp])
+
+    # ship AWS creds
+    execute(fab.send_awscreds, roles=[comp])
+
+
+def update_metrics(conf, comp='metrics'):
+    """"Update metrics component."""
+
+    # stop services on metrics
+    execute(fab.metricsd_stop, roles=[comp])
+
+    # update
+    execute(fab.rsync_code, 'metrics', roles=[comp])
+
+    # update reqs
+    execute(fab.pip_install_with_req, 'metrics', '~/metrics/ops/osaka', roles=[comp])
+    execute(fab.pip_install_with_req, 'metrics', '~/metrics/ops/prov_es', roles=[comp])
+    execute(fab.pip_install_with_req, 'metrics', '~/metrics/ops/hysds_commons', roles=[comp])
+    execute(fab.pip_install_with_req, 'metrics', '~/metrics/ops/hysds/third_party/celery-v3.1.25.pqueue', roles=[comp])
+    execute(fab.pip_install_with_req, 'metrics', '~/metrics/ops/hysds', roles=[comp])
+    execute(fab.pip_install_with_req, 'metrics', '~/metrics/ops/sciflo', roles=[comp])
+
+    # update celery config
+    execute(fab.rm_rf, '~/metrics/ops/hysds/celeryconfig.py', roles=[comp])
+    execute(fab.rm_rf, '~/metrics/ops/hysds/celeryconfig.pyc', roles=[comp])
+    execute(fab.send_celeryconf, 'metrics', roles=[comp])
+
+    # update supervisor config
+    execute(fab.rm_rf, '~/metrics/etc/supervisord.conf', roles=[comp])
+    execute(fab.send_template, 'supervisord.conf.metrics', '~/metrics/etc/supervisord.conf', 
+            '~/mozart/ops/hysds/configs/supervisor', roles=[comp])
+
+    #update datasets config; overwrite datasets config with domain-specific config
+    execute(fab.rm_rf, '~/metrics/etc/datasets.json', roles=[comp])
+    execute(fab.send_template, 'datasets.json', '~/metrics/etc/datasets.json', roles=[comp])
+
+    # ship logstash shipper configs
+    execute(fab.send_shipper_conf, 'metrics', '/home/hysdsops/metrics/log', conf.get('MOZART_ES_CLUSTER'),
+            conf.get('MOZART_PVT_IP'), conf.get('METRICS_ES_CLUSTER'), '127.0.0.1', roles=[comp])
+
+    # ship kibana config
+    execute(fab.send_template, 'kibana.yml', '~/kibana/config/kibana.yml', roles=[comp])
+
+    # ship AWS creds
+    execute(fab.send_awscreds, roles=[comp])
+
+
 def update(comp):
     """Update components."""
 
@@ -36,72 +150,5 @@ def update(comp):
 
     logger.debug("Updating %s" % comp)
 
-    if comp in ['mozart', 'all']:
-
-        # stop services on mozart
-        execute(fab.mozartd_stop, roles=[comp])
-
-        # update reqs
-        execute(fab.pip_install_with_req, 'mozart', '~/mozart/ops/osaka', roles=[comp])
-        execute(fab.pip_install_with_req, 'mozart', '~/mozart/ops/prov_es', roles=[comp])
-        execute(fab.pip_install_with_req, 'mozart', '~/mozart/ops/hysds_commons', roles=[comp])
-        execute(fab.pip_install_with_req, 'mozart', '~/mozart/ops/hysds/third_party/celery-v3.1.25.pqueue', roles=[comp])
-        execute(fab.pip_install_with_req, 'mozart', '~/mozart/ops/hysds', roles=[comp])
-        execute(fab.pip_install_with_req, 'mozart', '~/mozart/ops/sciflo', roles=[comp])
-        execute(fab.pip_install_with_req, 'mozart', '~/mozart/ops/mozart', roles=[comp])
-
-        # update celery config
-        execute(fab.rm_rf, '~/mozart/ops/hysds/celeryconfig.py', roles=[comp])
-        execute(fab.rm_rf, '~/mozart/ops/hysds/celeryconfig.pyc', roles=[comp])
-        execute(fab.send_celeryconf, 'mozart', roles=[comp])
-
-        # update supervisor config
-        execute(fab.rm_rf, '~/mozart/etc/supervisord.conf', roles=[comp])
-        execute(fab.send_template, 'supervisord.conf.mozart', '~/mozart/etc/supervisord.conf', 
-                '~/mozart/ops/hysds/configs/supervisor', roles=[comp])
-
-        # update orchestrator config
-        execute(fab.rm_rf, '~/mozart/etc/orchestrator_*.json', roles=[comp])
-        execute(fab.copy, '~/mozart/ops/hysds/configs/orchestrator/orchestrator_jobs.json',
-                '~/mozart/etc/orchestrator_jobs.json', roles=[comp])
-        execute(fab.copy, '~/mozart/ops/hysds/configs/orchestrator/orchestrator_datasets.json',
-                '~/mozart/etc/orchestrator_datasets.json', roles=[comp])
-
-        #update datasets config; overwrite datasets config with domain-specific config
-        execute(fab.rm_rf, '~/mozart/etc/datasets.json', roles=[comp])
-        execute(fab.send_template, 'datasets.json', '~/mozart/etc/datasets.json', roles=[comp])
-
-        # ship logstash shipper configs
-        execute(fab.send_shipper_conf, 'mozart', '/home/hysdsops/mozart/log', conf.get('MOZART_ES_CLUSTER'),
-                '127.0.0.1', conf.get('METRICS_ES_CLUSTER'), conf.get('METRICS_PVT_IP'), roles=[comp])
-
-        # update mozart config
-        execute(fab.rm_rf, '~/mozart/ops/mozart/settings.cfg', roles=[comp])
-        execute(fab.send_mozartconf, roles=[comp])
-        execute(fab.rm_rf, '~/mozart/ops/mozart/actions_config.json', roles=[comp])
-        execute(fab.copy, '~/mozart/ops/mozart/configs/actions_config.json.example', 
-                '~/mozart/ops/mozart/actions_config.json', roles=[comp])
-
-        # update figaro config
-        execute(fab.rm_rf, '~/mozart/ops/figaro/settings.cfg', roles=[comp])
-        execute(fab.send_figaroconf, roles=[comp])
-
-        # create user_rules index
-        execute(fab.create_user_rules_index, roles=[comp])
-
-        # ensure self-signed SSL certs exist
-        execute(fab.ensure_ssl, 'mozart', roles=[comp])
-
-        # link ssl certs to apps
-        execute(fab.ln_sf, '~/ssl/server.key', '~/mozart/ops/mozart/server.key', roles=[comp])
-        execute(fab.ln_sf, '~/ssl/server.pem', '~/mozart/ops/mozart/server.pem', roles=[comp])
-
-        # expose hysds log dir via webdav
-        #execute(fab.ln_sf, '~/mozart/log', '/data/work/log', roles=[comp])
-
-        # ship netrc
-        execute(fab.send_template, 'netrc.mozart', '.netrc', roles=[comp])
-        execute(fab.chmod, 600, '.netrc', roles=[comp])
-
-        # ship AWS creds
-        execute(fab.send_awscreds, roles=[comp])
+    if comp in ['mozart', 'all']: update_mozart(conf)
+    if comp in ['metrics', 'all']: update_metrics(conf)
