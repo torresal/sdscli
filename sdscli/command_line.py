@@ -52,7 +52,7 @@ def update(args):
     logger.debug("sds_type: %s" % sds_type)
     func = get_adapter_func(sds_type, 'update', 'update') 
     logger.debug("func: %s" % func)
-    func(args.component)
+    func(args.component, args.debug)
 
 
 def job_list(args):

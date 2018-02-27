@@ -10,7 +10,10 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     zip_safe=False,
-    install_requires=[ 'distribute', 'pyyaml', 'pygments', 'prompt-toolkit', 'fabric' ],
+    install_requires=[ 'distribute', 'pyyaml', 'pygments', 'prompt-toolkit', 
+                       'fabric', 'tqdm' ],
+                       #'fabric', 'progress' ],
+                       #'fabric', 'progressbar2' ],
     entry_points={
         'console_scripts': [
             'sds=sdscli.command_line:main'
