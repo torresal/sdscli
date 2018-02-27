@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 from __future__ import print_function
 
-import os, re, yaml
+import os, re, yaml, json, requests
 from copy import deepcopy
 from fabric.api import run, cd, put, sudo, prefix, env, settings
 from fabric.contrib.files import upload_template, exists
@@ -397,14 +397,44 @@ def mozartd_clean_start():
 
 
 def mozartd_stop():
-    run('kill -TERM `cat mozart/run/supervisord.pid`', shell=False, quiet=True)
+    with prefix('source mozart/bin/activate'):
+        run('supervisorctl shutdown')
 
 
 def redis_flush():
     run('redis-cli flushall')
 
 
- ##########################
+def mozart_redis_flush():
+    ctx = get_context()
+    run('redis-cli -h {MOZART_REDIS_PVT_IP} flushall'.format(**ctx))
+
+
+def rabbitmq_queues_flush():
+    ctx = get_context()
+    url = 'http://%s:15672/api/queues' % ctx['MOZART_RABBIT_PVT_IP']
+    r = requests.get('%s?columns=name' % url, auth=(ctx['MOZART_RABBIT_USER'], 
+                     ctx['MOZART_RABBIT_PASSWORD']))
+    r.raise_for_status()
+    res = r.json()
+    for i in res:
+        r = requests.delete('%s/%%2f/%s' % (url, i['name']),
+                            auth=(ctx['MOZART_RABBIT_USER'], ctx['MOZART_RABBIT_PASSWORD']))
+        r.raise_for_status()
+        logger.debug("Deleted queue %s." % i['name'])
+
+
+def mozart_es_flush():
+    ctx = get_context()
+    run('curl -XDELETE http://{MOZART_ES_PVT_IP}:9200/_template/*_status'.format(**ctx))
+    run('~/mozart/ops/hysds/scripts/clean_job_status_indexes.sh http://{MOZART_ES_PVT_IP}:9200'.format(**ctx))
+    run('~/mozart/ops/hysds/scripts/clean_task_status_indexes.sh http://{MOZART_ES_PVT_IP}:9200'.format(**ctx))
+    run('~/mozart/ops/hysds/scripts/clean_worker_status_indexes.sh http://{MOZART_ES_PVT_IP}:9200'.format(**ctx))
+    run('~/mozart/ops/hysds/scripts/clean_event_status_indexes.sh http://{MOZART_ES_PVT_IP}:9200'.format(**ctx))
+    #run('~/mozart/ops/hysds/scripts/clean_job_spec_container_indexes.sh http://{MOZART_ES_PVT_IP}:9200'.format(**ctx))
+
+
+##########################
 # metrics functions
 ##########################
 
@@ -419,7 +449,8 @@ def metricsd_clean_start():
 
 
 def metricsd_stop():
-    run('kill -TERM `cat metrics/run/supervisord.pid`', shell=False, quiet=True)
+    with prefix('source metrics/bin/activate'):
+        run('supervisorctl shutdown')
 
 
 ##########################
@@ -450,7 +481,8 @@ def verdid_clean_start():
 
 
 def verdid_stop():
-    run('kill -TERM `cat verdi/run/supervisord.pid`', shell=False, quiet=True)
+    with prefix('source verdi/bin/activate'):
+        run('supervisorctl shutdown')
 
 
 def supervisorctl_up():

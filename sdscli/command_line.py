@@ -55,6 +55,39 @@ def update(args):
     func(args.component, args.debug)
 
 
+def start(args):
+    """Start SDS components."""
+
+    logger.debug("got to start(): %s" % args)
+    sds_type = args.type
+    logger.debug("sds_type: %s" % sds_type)
+    func = get_adapter_func(sds_type, 'start', 'start') 
+    logger.debug("func: %s" % func)
+    func(args.component, args.debug)
+
+
+def stop(args):
+    """Stop SDS components."""
+
+    logger.debug("got to stop(): %s" % args)
+    sds_type = args.type
+    logger.debug("sds_type: %s" % sds_type)
+    func = get_adapter_func(sds_type, 'stop', 'stop') 
+    logger.debug("func: %s" % func)
+    func(args.component, args.debug)
+
+
+def reset(args):
+    """Reset SDS components."""
+
+    logger.debug("got to reset(): %s" % args)
+    sds_type = args.type
+    logger.debug("sds_type: %s" % sds_type)
+    func = get_adapter_func(sds_type, 'reset', 'reset') 
+    logger.debug("func: %s" % func)
+    func(args.component, args.debug)
+
+
 def job_list(args):
     """Configure SDS config file."""
 
@@ -96,6 +129,30 @@ def main():
     parser_update.add_argument('component', choices=['mozart', 'grq', 'metrics', 
                                'factotum', 'ci', 'verdi', 'all'])
     parser_update.set_defaults(func=update)
+
+    # parser for start
+    parser_start = subparsers.add_parser('start', help="start SDS components")
+    parser_start.add_argument('--type', '-t', default='hysds', const='hysds', nargs='?',
+                              choices=['hysds', 'sdskit'])
+    parser_start.add_argument('component', choices=['mozart', 'grq', 'metrics', 
+                              'factotum', 'all'])
+    parser_start.set_defaults(func=start)
+
+    # parser for stop
+    parser_stop = subparsers.add_parser('stop', help="stop SDS components")
+    parser_stop.add_argument('--type', '-t', default='hysds', const='hysds', nargs='?',
+                             choices=['hysds', 'sdskit'])
+    parser_stop.add_argument('component', choices=['mozart', 'grq', 'metrics', 
+                             'factotum', 'all'])
+    parser_stop.set_defaults(func=stop)
+
+    # parser for reset
+    parser_reset = subparsers.add_parser('reset', help="reset SDS components")
+    parser_reset.add_argument('--type', '-t', default='hysds', const='hysds', nargs='?',
+                              choices=['hysds', 'sdskit'])
+    parser_reset.add_argument('component', choices=['mozart', 'grq', 'metrics', 
+                              'factotum', 'all'])
+    parser_reset.set_defaults(func=reset)
 
     # parser for jobs
     parser_job = subparsers.add_parser('job', help="SDS job subcommand")

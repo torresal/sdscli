@@ -23,3 +23,9 @@ class IpAddressValidator(Validator):
         if not match:
             raise ValidationError(message='Input needs to be valid IP address',
                                   cursor_position=len(text))
+
+
+def set_bar_desc(bar, message):
+    """Set bar description."""
+
+    bar.set_description("{0: >20.20}".format(message))

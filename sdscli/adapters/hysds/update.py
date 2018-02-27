@@ -17,7 +17,7 @@ from pygments.token import Token
 from sdscli.log_utils import logger
 from sdscli.conf_utils import get_user_files_path, SettingsConf
 from sdscli.os_utils import validate_dir
-from sdscli.prompt_utils import YesNoValidator
+from sdscli.prompt_utils import YesNoValidator, set_bar_desc
 
 from . import fabfile as fab
 
@@ -27,12 +27,6 @@ prompt_style = style_from_dict({
     Token.Username: '#D8060C',
     Token.Param: '#3CFF33',
 })
-
-
-def set_bar_desc(bar, message):
-    """Set bar description."""
-
-    bar.set_description("{0: >20.20}".format(message))
 
 
 def update_mozart(conf, comp='mozart'):
