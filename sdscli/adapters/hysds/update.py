@@ -402,6 +402,85 @@ def update_factotum(conf, comp='factotum'):
         set_bar_desc(bar, 'Updated factotum')
 
 
+def update_verdi(conf, comp='verdi'):
+    """"Update verdi component."""
+
+    # progress bar
+    with tqdm(total=14) as bar:
+
+        # stop services
+        set_bar_desc(bar, 'Stopping verdid')
+        execute(fab.verdid_stop, roles=[comp])
+        execute(fab.kill_hung, roles=[comp])
+        bar.update()
+
+        # remove code bundle stuff
+        set_bar_desc(bar, 'Remove code bundle')
+        execute(fab.rm_rf, '~/verdi/ops/etc', roles=[comp])
+        execute(fab.rm_rf, '~/verdi/ops/install.sh', roles=[comp])
+        bar.update()
+
+        # update
+        set_bar_desc(bar, 'Syncing packages')
+        execute(fab.rm_rf, '~/verdi/ops/*', roles=[comp])
+        execute(fab.rsync_code, 'verdi', roles=[comp])
+        bar.update()
+
+        # update reqs
+        set_bar_desc(bar, 'Updating HySDS core')
+        execute(fab.pip_install_with_req, 'verdi', '~/verdi/ops/osaka', roles=[comp])
+        bar.update()
+        execute(fab.pip_install_with_req, 'verdi', '~/verdi/ops/prov_es', roles=[comp])
+        bar.update()
+        execute(fab.pip_install_with_req, 'verdi', '~/verdi/ops/hysds_commons', roles=[comp])
+        bar.update()
+        execute(fab.pip_install_with_req, 'verdi', '~/verdi/ops/hysds/third_party/celery-v3.1.25.pqueue', roles=[comp])
+        bar.update()
+        execute(fab.pip_install_with_req, 'verdi', '~/verdi/ops/hysds', roles=[comp])
+        bar.update()
+        execute(fab.pip_install_with_req, 'verdi', '~/verdi/ops/sciflo', roles=[comp])
+        bar.update()
+
+        # update celery config
+        set_bar_desc(bar, 'Updating celery config')
+        execute(fab.rm_rf, '~/verdi/ops/hysds/celeryconfig.py', roles=[comp])
+        execute(fab.rm_rf, '~/verdi/ops/hysds/celeryconfig.pyc', roles=[comp])
+        execute(fab.send_celeryconf, 'verdi', roles=[comp])
+        bar.update()
+
+        # update supervisor config
+        set_bar_desc(bar, 'Updating supervisor config')
+        execute(fab.rm_rf, '~/verdi/etc/supervisord.conf', roles=[comp])
+        execute(fab.send_template, 'supervisord.conf.verdi', '~/verdi/etc/supervisord.conf', 
+                '~/mozart/ops/hysds/configs/supervisor', roles=[comp])
+        bar.update()
+
+        #update datasets config; overwrite datasets config with domain-specific config
+        set_bar_desc(bar, 'Updating datasets config')
+        execute(fab.rm_rf, '~/verdi/etc/datasets.json', roles=[comp])
+        execute(fab.send_template, 'datasets.json', '~/verdi/etc/datasets.json', roles=[comp])
+        bar.update()
+
+        # expose hysds log dir via webdav
+        set_bar_desc(bar, 'Expose logs')
+        execute(fab.mkdir, '/data/work', None, None, roles=[comp])
+        execute(fab.ln_sf, '~/verdi/log', '/data/work/log', roles=[comp])
+        bar.update()
+
+        # ship netrc
+        netrc = os.path.join(get_user_files_path(), 'netrc')
+        if os.path.exists(netrc):
+            set_bar_desc(bar, 'Configuring netrc')
+            execute(fab.copy, netrc, '.netrc', roles=[comp])
+            execute(fab.chmod, 600, '.netrc', roles=[comp])
+
+        # ship AWS creds
+        set_bar_desc(bar, 'Configuring AWS creds')
+        execute(fab.send_awscreds, roles=[comp])
+        bar.update()
+        set_bar_desc(bar, 'Updated verdi')
+
+
 def update_comp(comp, conf):
     """Update component."""
 
@@ -409,7 +488,7 @@ def update_comp(comp, conf):
     if comp == 'all':
     
         # progress bar
-        with tqdm(total=4) as bar:
+        with tqdm(total=5) as bar:
             set_bar_desc(bar, "Updating grq")
             update_grq(conf)
             bar.update()
@@ -422,12 +501,16 @@ def update_comp(comp, conf):
             set_bar_desc(bar, "Updating factotum")
             update_factotum(conf)
             bar.update()
+            set_bar_desc(bar, "Updating verdi")
+            update_verdi(conf)
+            bar.update()
             set_bar_desc(bar, "Updated all")
     else:
         if comp == 'grq': update_grq(conf)
         if comp == 'mozart': update_mozart(conf)
         if comp == 'metrics': update_metrics(conf)
         if comp == 'factotum': update_factotum(conf)
+        if comp == 'verdi': update_verdi(conf)
 
 
 def update(comp, debug=False):
