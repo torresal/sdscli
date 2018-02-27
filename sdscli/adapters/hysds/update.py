@@ -505,6 +505,7 @@ def update_comp(comp, conf):
             update_verdi(conf)
             bar.update()
             set_bar_desc(bar, "Updated all")
+            print("")
     else:
         if comp == 'grq': update_grq(conf)
         if comp == 'mozart': update_mozart(conf)
