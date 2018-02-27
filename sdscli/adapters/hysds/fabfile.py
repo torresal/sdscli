@@ -337,6 +337,19 @@ def status():
         run('supervisorctl status')
 
 
+def ensure_venv(hysds_dir):
+    act_file = "~/%s/bin/activate" % hysds_dir
+    if not exists(act_file):
+        run("virtualenv --system-site-packages %s" % hysds_dir)
+        with prefix('source %s/bin/activate' % hysds_dir):
+            run('pip install -U pip')
+            run('pip install -U setuptools')
+            run('pip install --ignore-installed supervisor')
+            mkdir('%s/etc' % hysds_dir, context['OPS_USER'], context['OPS_USER'])
+            mkdir('%s/log' % hysds_dir, context['OPS_USER'], context['OPS_USER'])
+            mkdir('%s/run' % hysds_dir, context['OPS_USER'], context['OPS_USER'])
+
+
 ##########################
 # grq functions
 ##########################

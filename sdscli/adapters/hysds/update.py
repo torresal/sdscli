@@ -39,7 +39,12 @@ def update_mozart(conf, comp='mozart'):
     """"Update mozart component."""
 
     # progress bar
-    with tqdm(total=21) as bar:
+    with tqdm(total=22) as bar:
+
+        # ensure venv
+        set_bar_desc(bar, 'Ensuring HySDS venv')
+        execute(fab.ensure_venv, comp, roles=[comp])
+        bar.update()
 
         # stop services
         set_bar_desc(bar, 'Stopping mozartd')
@@ -151,7 +156,12 @@ def update_metrics(conf, comp='metrics'):
     """"Update metrics component."""
 
     # progress bar
-    with tqdm(total=19) as bar:
+    with tqdm(total=20) as bar:
+
+        # ensure venv
+        set_bar_desc(bar, 'Ensuring HySDS venv')
+        execute(fab.ensure_venv, comp, roles=[comp])
+        bar.update()
 
         # stop services
         set_bar_desc(bar, 'Stopping metricsd')
@@ -231,7 +241,12 @@ def update_grq(conf, comp='grq'):
     """"Update grq component."""
 
     # progress bar
-    with tqdm(total=20) as bar:
+    with tqdm(total=21) as bar:
+
+        # ensure venv
+        set_bar_desc(bar, 'Ensuring HySDS venv')
+        execute(fab.ensure_venv, 'sciflo', roles=[comp])
+        bar.update()
 
         # stop services
         set_bar_desc(bar, 'Stopping grqd')
@@ -332,7 +347,12 @@ def update_factotum(conf, comp='factotum'):
     """"Update factotum component."""
 
     # progress bar
-    with tqdm(total=13) as bar:
+    with tqdm(total=14) as bar:
+
+        # ensure venv
+        set_bar_desc(bar, 'Ensuring HySDS venv')
+        execute(fab.ensure_venv, 'verdi', roles=[comp])
+        bar.update()
 
         # stop services
         set_bar_desc(bar, 'Stopping verdid')
@@ -406,7 +426,12 @@ def update_verdi(conf, comp='verdi'):
     """"Update verdi component."""
 
     # progress bar
-    with tqdm(total=14) as bar:
+    with tqdm(total=15) as bar:
+
+        # ensure venv
+        set_bar_desc(bar, 'Ensuring HySDS venv')
+        execute(fab.ensure_venv, comp, roles=[comp])
+        bar.update()
 
         # stop services
         set_bar_desc(bar, 'Stopping verdid')
