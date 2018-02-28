@@ -729,14 +729,18 @@ def send_awscreds():
     ctx = get_context()
     if exists('.aws'): run('rm -rf .aws')
     mkdir('.aws', context['OPS_USER'], context['OPS_USER'])
+    run('chmod 700 .aws')
     upload_template('aws_config', '.aws/config', use_jinja=True, context=ctx,
                     template_dir=get_user_files_path())
     upload_template('aws_credentials', '.aws/credentials', use_jinja=True, context=ctx,
                     template_dir=get_user_files_path())
+    run('chmod 400 .aws/*')
     upload_template('boto', '.boto', use_jinja=True, context=ctx,
                     template_dir=get_user_files_path())
+    run('chmod 400 .boto')
     upload_template('s3cfg', '.s3cfg', use_jinja=True, context=ctx,
                     template_dir=get_user_files_path())
+    run('chmod 400 .s3cfg')
 
 
 ##########################
