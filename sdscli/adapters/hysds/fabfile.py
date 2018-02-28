@@ -136,6 +136,13 @@ def get_context(node_type=None):
     return ctx
 
 
+def resolve_files_dir(fname, files_dir):
+    """Resolve file or template from user SDS files or default location."""
+
+    user_path = get_user_files_path()
+    return user_path if os.path.exists(os.path.join(user_path, fname)) else files_dir
+
+
 def host_type():
     run('uname -s')
 
@@ -198,6 +205,13 @@ def send_template(tmpl, dest, tmpl_dir=None):
     if tmpl_dir is None: tmpl_dir = get_user_files_path()
     else: tmpl_dir = os.path.expanduser(tmpl_dir)
     upload_template(tmpl, dest, use_jinja=True, context=get_context(), template_dir=tmpl_dir)
+
+
+def send_template_user_override(tmpl, dest, tmpl_dir=None):
+    if tmpl_dir is None: tmpl_dir = get_user_files_path()
+    else: tmpl_dir = os.path.expanduser(tmpl_dir)
+    upload_template(tmpl, dest, use_jinja=True, context=get_context(),
+                    template_dir=resolve_files_dir(tmpl, tmpl_dir))
 
 
 def set_spyddder_settings():
@@ -734,13 +748,15 @@ def send_awscreds():
                     template_dir=get_user_files_path())
     upload_template('aws_credentials', '.aws/credentials', use_jinja=True, context=ctx,
                     template_dir=get_user_files_path())
-    run('chmod 400 .aws/*')
+    run('chmod 600 .aws/*')
+    if exists('.boto'): run('rm -rf .boto')
     upload_template('boto', '.boto', use_jinja=True, context=ctx,
                     template_dir=get_user_files_path())
-    run('chmod 400 .boto')
+    run('chmod 600 .boto')
+    if exists('.s3cfg'): run('rm -rf .s3cfg')
     upload_template('s3cfg', '.s3cfg', use_jinja=True, context=ctx,
                     template_dir=get_user_files_path())
-    run('chmod 400 .s3cfg')
+    run('chmod 600 .s3cfg')
 
 
 ##########################

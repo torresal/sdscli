@@ -72,8 +72,9 @@ def update_mozart(conf, comp='mozart'):
         # update supervisor config
         set_bar_desc(bar, 'Updating supervisor config')
         execute(fab.rm_rf, '~/mozart/etc/supervisord.conf', roles=[comp])
-        execute(fab.send_template, 'supervisord.conf.mozart', '~/mozart/etc/supervisord.conf', 
-                '~/mozart/ops/hysds/configs/supervisor', roles=[comp])
+        execute(fab.send_template_user_override, 'supervisord.conf.mozart', 
+                '~/mozart/etc/supervisord.conf', '~/mozart/ops/hysds/configs/supervisor',
+                roles=[comp])
         bar.update()
 
         # update orchestrator config
@@ -196,8 +197,9 @@ def update_metrics(conf, comp='metrics'):
         set_bar_desc(bar, 'Updating supervisor config')
         execute(fab.rm_rf, '~/metrics/etc/supervisord.conf', roles=[comp])
         bar.update()
-        execute(fab.send_template, 'supervisord.conf.metrics', '~/metrics/etc/supervisord.conf', 
-                '~/mozart/ops/hysds/configs/supervisor', roles=[comp])
+        execute(fab.send_template_user_override, 'supervisord.conf.metrics',
+                '~/metrics/etc/supervisord.conf', '~/mozart/ops/hysds/configs/supervisor',
+                roles=[comp])
         bar.update()
 
         #update datasets config; overwrite datasets config with domain-specific config
@@ -297,8 +299,9 @@ def update_grq(conf, comp='grq'):
         # update supervisor config
         set_bar_desc(bar, 'Updating supervisor config')
         execute(fab.rm_rf, '~/sciflo/etc/supervisord.conf', roles=[comp])
-        execute(fab.send_template, 'supervisord.conf.grq', '~/sciflo/etc/supervisord.conf', 
-                '~/mozart/ops/hysds/configs/supervisor', roles=[comp])
+        execute(fab.send_template_user_override, 'supervisord.conf.grq',
+                '~/sciflo/etc/supervisord.conf', '~/mozart/ops/hysds/configs/supervisor',
+                roles=[comp])
         bar.update()
 
         #update datasets config; overwrite datasets config with domain-specific config
@@ -386,8 +389,9 @@ def update_factotum(conf, comp='factotum'):
         # update supervisor config
         set_bar_desc(bar, 'Updating supervisor config')
         execute(fab.rm_rf, '~/verdi/etc/supervisord.conf', roles=[comp])
-        execute(fab.send_template, 'supervisord.conf.factotum', '~/verdi/etc/supervisord.conf', 
-                '~/mozart/ops/hysds/configs/supervisor', roles=[comp])
+        execute(fab.send_template_user_override, 'supervisord.conf.factotum', 
+                '~/verdi/etc/supervisord.conf', '~/mozart/ops/hysds/configs/supervisor',
+                roles=[comp])
         bar.update()
 
         #update datasets config; overwrite datasets config with domain-specific config
@@ -470,8 +474,9 @@ def update_verdi(conf, comp='verdi'):
         # update supervisor config
         set_bar_desc(bar, 'Updating supervisor config')
         execute(fab.rm_rf, '~/verdi/etc/supervisord.conf', roles=[comp])
-        execute(fab.send_template, 'supervisord.conf.verdi', '~/verdi/etc/supervisord.conf', 
-                '~/mozart/ops/hysds/configs/supervisor', roles=[comp])
+        execute(fab.send_template_user_override, 'supervisord.conf.verdi', 
+                '~/verdi/etc/supervisord.conf', '~/mozart/ops/hysds/configs/supervisor',
+                roles=[comp])
         bar.update()
 
         #update datasets config; overwrite datasets config with domain-specific config
