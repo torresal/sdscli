@@ -18,7 +18,7 @@ def get_adapter_module(sds_type, mod_name):
         return import_module('sdscli.adapters.%s.%s' % (sds_type, mod_name))
     except ImportError:
         logger.error('Failed to import adapter module "%s" for SDS type "%s".' % (mod_name, sds_type))
-        logger.error('Not implemented yet, sparky!')
+        logger.error('Not implemented yet. Mahalo for trying. ;)')
         sys.exit(1)
 
 
@@ -31,7 +31,7 @@ def get_adapter_func(sds_type, mod_name, func_name):
         return getattr(adapter_mod, func_name)
     except AttributeError:
         logger.error('Failed to get function "%s" from adapter module "%s".' % (func_name, adapter_mod))
-        logger.error('Not implemented yet, sparky!')
+        logger.error('Not implemented yet. Mahalo for trying. ;)')
         sys.exit(1)
 
 
