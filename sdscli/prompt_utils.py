@@ -9,6 +9,27 @@ from prompt_toolkit.validation import Validator, ValidationError
 from sdscli.log_utils import logger
 
 
+COLOR_CODE = {
+    "default": "{};39",
+    "black": "{};30",
+    "red": "{};31",
+    "green": "{};32",
+    "yellow": "{};33",
+    "blue": "{};34",
+    "magenta": "{};35",
+    "cyan": "{};36",
+    "light_gray": "{};37",
+    "dark_gray": "{};90",
+    "light_red": "{};91",
+    "light_green": "{};92",
+    "light_yellow": "{};93",
+    "light_blue": "{};94",
+    "light_magenta": "{};95",
+    "light_cyan": "{};96",
+    "white": "{};97",
+}
+
+
 class YesNoValidator(Validator):
     def validate(self, document):
         text = document.text.lower()
@@ -29,3 +50,18 @@ def set_bar_desc(bar, message):
     """Set bar description."""
 
     bar.set_description("{0: >20.20}".format(message))
+
+
+def highlight(s, color="green", bold=True):
+    """Return colored string."""
+
+    color_code = COLOR_CODE[color].format("1" if bold else "0")
+    return "\033[{};40m{}\033[0m".format(color_code, s)
+
+
+def print_component_header(comp):
+    """Print component header."""
+
+    print(highlight("#" * 40, 'magenta'))
+    print(highlight(comp, 'cyan', True))
+    print(highlight("#" * 40, 'magenta'))

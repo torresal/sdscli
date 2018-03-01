@@ -341,7 +341,7 @@ def stop_docker_containers():
 
 
 def status():
-    for role in env.roles:
+    for role in env.effective_roles:
         if env.host_string in env.roledefs[role]:
             break
     if role in ('factotum', 'ci'): hysds_dir = "verdi"
@@ -600,7 +600,7 @@ def reload_configuration():
 
 def send_shipper_conf(node_type, log_dir, cluster_jobs, redis_ip_job_status,
                       cluster_metrics, redis_ip_metrics):
-    for role in env.roles:
+    for role in env.effective_roles:
         if env.host_string in env.roledefs[role]:
             if '@' in env.host_string:
                 hostname = env.host_string.split('@')[1]

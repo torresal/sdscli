@@ -88,6 +88,17 @@ def reset(args):
     func(args.component, args.debug)
 
 
+def status(args):
+    """SDS component status."""
+
+    logger.debug("got to status(): %s" % args)
+    sds_type = args.type
+    logger.debug("sds_type: %s" % sds_type)
+    func = get_adapter_func(sds_type, 'status', 'status') 
+    logger.debug("func: %s" % func)
+    func(args.component, args.debug)
+
+
 def job_list(args):
     """Configure SDS config file."""
 
@@ -153,6 +164,14 @@ def main():
     parser_reset.add_argument('component', choices=['mozart', 'grq', 'metrics', 
                               'factotum', 'all'])
     parser_reset.set_defaults(func=reset)
+
+    # parser for status
+    parser_status = subparsers.add_parser('status', help="status of SDS components")
+    parser_status.add_argument('--type', '-t', default='hysds', const='hysds', nargs='?',
+                               choices=['hysds', 'sdskit'])
+    parser_status.add_argument('component', choices=['mozart', 'grq', 'metrics', 
+                               'factotum', 'ci', 'verdi', 'all'])
+    parser_status.set_defaults(func=status)
 
     # parser for jobs
     parser_job = subparsers.add_parser('job', help="SDS job subcommand")
