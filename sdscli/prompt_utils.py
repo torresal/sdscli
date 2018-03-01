@@ -59,9 +59,15 @@ def highlight(s, color="green", bold=True):
     return "\033[{};40m{}\033[0m".format(color_code, s)
 
 
+def blink(s):
+    """Return blinking string."""
+
+    return "\033[5;40m{}\033[25m".format(s)
+
+
 def print_component_header(comp):
     """Print component header."""
 
-    print(highlight("#" * 40, 'magenta'))
+    print(highlight("#" * 40, 'cyan'))
     print(highlight(comp, 'cyan', True))
-    print(highlight("#" * 40, 'magenta'))
+    print(highlight("#" * 40, 'cyan'))

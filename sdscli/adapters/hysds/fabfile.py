@@ -13,6 +13,7 @@ from fabric.contrib.project import rsync_project
 
 from sdscli.log_utils import logger
 from sdscli.conf_utils import get_user_config_path, get_user_files_path
+from sdscli.prompt_utils import highlight, blink
 
 
 # ssh_opts and extra_opts for rsync and rsync_project
@@ -347,8 +348,11 @@ def status():
     if role in ('factotum', 'ci'): hysds_dir = "verdi"
     elif role == 'grq': hysds_dir = "sciflo"
     else: hysds_dir = role
-    with prefix('source %s/bin/activate' % hysds_dir):
-        run('supervisorctl status')
+    if exists('%s/run/supervisor.sock' % hysds_dir):
+        with prefix('source %s/bin/activate' % hysds_dir):
+            run('supervisorctl status')
+    else:
+        print(blink(highlight("Supervisord is not running on %s." % role, 'red')))
 
 
 def ensure_venv(hysds_dir):
@@ -370,8 +374,9 @@ def ensure_venv(hysds_dir):
 
 def grqd_start():
     mkdir('sciflo/run', context['OPS_USER'], context['OPS_USER'])
-    with prefix('source sciflo/bin/activate'):
-        run('supervisord')
+    if not exists('sciflo/run/supervisord.pid'):
+        with prefix('source sciflo/bin/activate'):
+            run('supervisord')
 
 
 def grqd_clean_start():
@@ -383,7 +388,8 @@ def grqd_clean_start():
 
 
 def grqd_stop():
-    run('kill -TERM `cat sciflo/run/supervisord.pid`', shell=False, quiet=True)
+    with prefix('source sciflo/bin/activate'):
+        run('supervisorctl shutdown')
 
 
 def install_es_template():
@@ -401,8 +407,9 @@ def clean_hysds_ios():
 ##########################
 
 def mozartd_start():
-    with prefix('source mozart/bin/activate'):
-        run('supervisord')
+    if not exists('mozart/run/supervisord.pid'):
+        with prefix('source mozart/bin/activate'):
+            run('supervisord')
 
 
 def mozartd_clean_start():
@@ -453,8 +460,9 @@ def mozart_es_flush():
 ##########################
 
 def metricsd_start():
-    with prefix('source metrics/bin/activate'):
-        run('supervisord')
+    if not exists('metrics/run/supervisord.pid'):
+        with prefix('source metrics/bin/activate'):
+            run('supervisord')
 
 
 def metricsd_clean_start():
@@ -485,8 +493,9 @@ def kill_hung():
 
 
 def verdid_start():
-    with prefix('source verdi/bin/activate'):
-        run('supervisord')
+    if not exists('verdi/run/supervisord.pid'):
+        with prefix('source verdi/bin/activate'):
+            run('supervisord')
 
 
 def verdid_clean_start():
