@@ -101,6 +101,17 @@ def status(args):
     func(args.component, args.debug)
 
 
+def ci(args):
+    """Continuous integration functions."""
+
+    logger.debug("got to ci(): %s" % args)
+    sds_type = args.type
+    logger.debug("sds_type: %s" % sds_type)
+    func = get_adapter_func(sds_type, 'ci', args.subparser)
+    logger.debug("func: %s" % func)
+    func(args)
+
+
 def job_list(args):
     """Configure SDS config file."""
 
@@ -174,6 +185,23 @@ def main():
     parser_status.add_argument('component', choices=['mozart', 'grq', 'metrics', 
                                'factotum', 'ci', 'verdi', 'all'])
     parser_status.set_defaults(func=status)
+
+    # parser for ci
+    parser_ci = subparsers.add_parser('ci', help="configure continuous integration for SDS cluster")
+    parser_ci.add_argument('--type', '-t', default='hysds', const='hysds', nargs='?',
+                               choices=['hysds', 'sdskit'])
+    parser_ci_subparsers = parser_ci.add_subparsers(dest='subparser', help='Continuous integration functions')
+    parser_ci_add_job = parser_ci_subparsers.add_parser('add_job', help="add Jenkins job")
+    parser_ci_add_job.add_argument('repo', help='git repository url')
+    parser_ci_add_job.add_argument('storage', choices=['s3', 's3s', 'gs', 'dav', 'davs'],
+                                   help='image storage type')
+    parser_ci_add_job.add_argument('uid', help="image's ops UID")
+    parser_ci_add_job.add_argument('gid', help="image's ops GID")
+    parser_ci_add_job.add_argument('--branch', '-b', default=None,
+                                   help="register git branch instead of release")
+    #parser_ci_rm_job = parser_ci_subparsers.add_parser('remove_job', help="remove Jenkins job")
+    #parser_ci_rm_job.add_argument('name', help='jenkins job name')
+    parser_ci.set_defaults(func=ci)
 
     # parser for jobs
     parser_job = subparsers.add_parser('job', help="SDS job subcommand")
