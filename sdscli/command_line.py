@@ -4,7 +4,7 @@ SDSKit command line interface.
 from __future__ import absolute_import
 from __future__ import print_function
 
-import os, importlib, json, yaml, traceback, argparse, logging
+import os, sys, importlib, json, yaml, traceback, argparse, logging
 from importlib import import_module
 
 import sdscli
@@ -18,7 +18,8 @@ def get_adapter_module(sds_type, mod_name):
         return import_module('sdscli.adapters.%s.%s' % (sds_type, mod_name))
     except ImportError:
         logger.error('Failed to import adapter module "%s" for SDS type "%s".' % (mod_name, sds_type))
-        raise
+        logger.error('Not implemented yet, sparky!')
+        sys.exit(1)
 
 
 def get_adapter_func(sds_type, mod_name, func_name):
@@ -30,7 +31,8 @@ def get_adapter_func(sds_type, mod_name, func_name):
         return getattr(adapter_mod, func_name)
     except AttributeError:
         logger.error('Failed to get function "%s" from adapter module "%s".' % (func_name, adapter_mod))
-        raise
+        logger.error('Not implemented yet, sparky!')
+        sys.exit(1)
 
 
 def configure(args):
