@@ -11,9 +11,7 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires=[ 'distribute', 'pyyaml', 'pygments', 'prompt-toolkit', 
-                       'fabric', 'tqdm' ],
-                       #'fabric', 'progress' ],
-                       #'fabric', 'progressbar2' ],
+                       'fabric', 'tqdm', 'backoff' ],
     entry_points={
         'console_scripts': [
             'sds=sdscli.command_line:main'

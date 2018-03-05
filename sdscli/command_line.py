@@ -112,6 +112,17 @@ def ci(args):
     func(args)
 
 
+def pkg(args):
+    """SDS package managment functions."""
+
+    logger.debug("got to pkg(): %s" % args)
+    sds_type = args.type
+    logger.debug("sds_type: %s" % sds_type)
+    func = get_adapter_func(sds_type, 'pkg', args.subparser)
+    logger.debug("func: %s" % func)
+    func(args)
+
+
 def job_list(args):
     """Configure SDS config file."""
 
@@ -203,6 +214,16 @@ def main():
     #parser_ci_rm_job = parser_ci_subparsers.add_parser('remove_job', help="remove Jenkins job")
     #parser_ci_rm_job.add_argument('name', help='jenkins job name')
     parser_ci.set_defaults(func=ci)
+
+    # parser for pkg
+    parser_pkg = subparsers.add_parser('pkg', help="SDS package management")
+    parser_pkg.add_argument('--type', '-t', default='hysds', const='hysds', nargs='?',
+                               choices=['hysds', 'sdskit'])
+    parser_pkg_subparsers = parser_pkg.add_subparsers(dest='subparser', help='SDS package management functions')
+    parser_pkg_ls = parser_pkg_subparsers.add_parser('ls', help="list SDS packages")
+    #parser_pkg_rm_job = parser_pkg_subparsers.add_parser('remove_job', help="remove Jenkins job")
+    #parser_pkg_rm_job.add_argument('name', help='jenkins job name')
+    parser_pkg.set_defaults(func=pkg)
 
     # parser for jobs
     parser_job = subparsers.add_parser('job', help="SDS job subcommand")
