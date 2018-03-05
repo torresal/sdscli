@@ -6,6 +6,12 @@ import os
 from sdscli.log_utils import logger
 
 
+def normpath(d):
+    """Normalize absolute path."""
+
+    return os.path.abspath(os.path.normpath(d))
+
+
 def makedirs(d, mode=0777):
     """Make directory along with any parent directory that may be needed."""
 

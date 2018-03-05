@@ -220,7 +220,11 @@ def main():
     parser_pkg.add_argument('--type', '-t', default='hysds', const='hysds', nargs='?',
                                choices=['hysds', 'sdskit'])
     parser_pkg_subparsers = parser_pkg.add_subparsers(dest='subparser', help='SDS package management functions')
-    parser_pkg_ls = parser_pkg_subparsers.add_parser('ls', help="list SDS packages")
+    parser_pkg_ls = parser_pkg_subparsers.add_parser('ls', help="list SDS package ids")
+    parser_pkg_export = parser_pkg_subparsers.add_parser('export', help="export SDS package")
+    parser_pkg_export.add_argument('id', help='SDS package id to export')
+    parser_pkg_export.add_argument('--outdir', '-o', default=".",
+                                   help="root output directory of SDS package")
     #parser_pkg_rm_job = parser_pkg_subparsers.add_parser('remove_job', help="remove Jenkins job")
     #parser_pkg_rm_job.add_argument('name', help='jenkins job name')
     parser_pkg.set_defaults(func=pkg)
