@@ -199,6 +199,7 @@ def main():
     parser_ci_add_job.add_argument('gid', help="image's ops GID")
     parser_ci_add_job.add_argument('--branch', '-b', default=None,
                                    help="register git branch instead of release")
+    parser_ci_add_job.add_argument('--token', '-k', action='store_true', help="use configured OAuth token")
     #parser_ci_rm_job = parser_ci_subparsers.add_parser('remove_job', help="remove Jenkins job")
     #parser_ci_rm_job.add_argument('name', help='jenkins job name')
     parser_ci.set_defaults(func=ci)

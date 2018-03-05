@@ -8,6 +8,7 @@ from __future__ import print_function
 import os, yaml, pwd, hashlib, traceback
 from fabric.api import execute, hide
 from tqdm import tqdm
+from urlparse import urlparse
 
 from prompt_toolkit.shortcuts import prompt, print_tokens
 from prompt_toolkit.styles import style_from_dict
@@ -37,12 +38,23 @@ def add_job(args):
     # get user's SDS conf settings
     conf = SettingsConf()
 
+    # if using OAuth token, check its defined
+    if args.token:
+        if conf.get('GIT_OAUTH_TOKEN') is None:
+            logger.error("Cannot use OAuth token. Undefined in SDS config.")
+            return 1 
+        u = urlparse(args.repo)
+        repo_url = u._replace(netloc="{}@{}".format(conf.get('GIT_OAUTH_TOKEN'), u.netloc)).geturl()
+    else: repo_url = args.repo
+
+    logger.debug("repo_url: {}".format(repo_url))
+
     # add jenkins job for branch or release
     if args.branch is None:
-        execute(fab.add_ci_job_release, args.repo, args.storage, args.uid, 
+        execute(fab.add_ci_job_release, repo_url, args.storage, args.uid, 
                 args.gid, roles=['ci'])
     else:
-        execute(fab.add_ci_job, args.repo, args.storage, args.uid, 
+        execute(fab.add_ci_job, repo_url, args.storage, args.uid, 
                 args.gid, args.branch, roles=['ci'])
 
     # reload
