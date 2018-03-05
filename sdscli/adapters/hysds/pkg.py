@@ -18,7 +18,7 @@ from sdscli.conf_utils import get_user_files_path, SettingsConf
 from sdscli.query_utils import run_query
 from sdscli.os_utils import validate_dir, normpath
 
-from osaka.main import get
+from osaka.main import get, put
 
 
 def ls(args):
@@ -144,6 +144,90 @@ def export(args):
     tar_file = os.path.join(outdir, "{}.tar".format(export_name))
     with tarfile.open(tar_file, "w") as tar:
         tar.add(export_dir, arcname=os.path.relpath(export_dir, outdir))
+
+    # remove package dir
+    shutil.rmtree(export_dir)
+
+
+def import_pkg(args):
+    """Import HySDS package."""
+
+    # get user's SDS conf settings
+    conf = SettingsConf()
+
+    # package tar file
+    tar_file = normpath(args.file)
+    if not os.path.isfile(tar_file):
+        logger.error("HySDS package file {} doesn't exist.".format(tar_file))
+        return 1
+    logger.debug("tar_file: {}".format(tar_file))
+
+    # extract
+    outdir = os.path.dirname(tar_file)
+    with tarfile.open(tar_file) as tar:
+        export_name = tar.getnames()[0]
+        tar.extractall(outdir)
+    export_dir = os.path.join(outdir, export_name)
+    logger.debug("export_dir: {}".format(export_dir))
+
+    # detect export dir
+    if not os.path.isdir(export_dir):
+        logger.error("Cannot find HySDS package dir {}.".format(export_dir))
+        return 1
+
+    # read in manifest
+    manifest_file = os.path.join(export_dir, 'manifest.json')
+    with open(manifest_file) as f:
+        manifest = json.load(f)
+    logger.debug("manifest: {}".format(json.dumps(manifest, indent=2, sort_keys=True)))
+
+    # get code bucket
+    code_bucket = conf.get('CODE_BUCKET')
+    code_bucket_url = "s3://{}/{}".format(conf.get('S3_ENDPOINT'), code_bucket)
+    logger.debug("code_bucket: {}".format(code_bucket))
+    logger.debug("code_bucket_url: {}".format(code_bucket_url))
+
+    # get ES endpoints
+    mozart_es_url = "http://{}:9200".format(conf.get('MOZART_ES_PVT_IP'))
+    grq_es_url = "http://{}:9200".format(conf.get('GRQ_ES_PVT_IP'))
+
+
+    # upload container image and index container in ES
+    cont_info = manifest['containers']
+    cont_image = os.path.join(export_dir, cont_info['url'])
+    cont_info['url'] = "{}/{}".format(code_bucket_url, cont_info['url'])
+    put(cont_image, cont_info['url'])
+    r = requests.put("{}/containers/container/{}".format(mozart_es_url, cont_info['id']),
+                     data=json.dumps(cont_info))
+    r.raise_for_status()
+    logger.debug(r.json())
+
+    # index job_specs in ES and upload any dependency containers
+    dep_images = {}
+    for job_spec in manifest['job_specs']:
+        # download dependency images
+        for d in job_spec.get('dependency_images', []):
+            if d['container_image_name'] in dep_images:
+                d['container_image_url'] = dep_images[d['container_image_name']]
+            else:
+                # upload container
+                dep_img = os.path.join(export_dir, d['container_image_url'])
+                d['container_image_url'] = "{}/{}".format(code_bucket_url, d['container_image_url'])
+                put(dep_img, d['container_image_url'])
+                dep_images[d['container_image_name']] = d['container_image_url']
+        r = requests.put("{}/job_specs/job_spec/{}".format(mozart_es_url, job_spec['id']),
+                         data=json.dumps(job_spec))
+        r.raise_for_status()
+        logger.debug(r.json())
+
+    # index hysds_ios in ES
+    for hysds_io in manifest['hysds_ios']:
+        component = hysds_io.get('component', 'tosca')
+        es_url = mozart_es_url if component == 'mozart' else grq_es_url
+        r = requests.put("{}/hysds_ios/hysds_io/{}".format(es_url, hysds_io['id']),
+                         data=json.dumps(hysds_io))
+        r.raise_for_status()
+        logger.debug(r.json())
 
     # remove package dir
     shutil.rmtree(export_dir)

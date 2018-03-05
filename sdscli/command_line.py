@@ -118,7 +118,7 @@ def pkg(args):
     logger.debug("got to pkg(): %s" % args)
     sds_type = args.type
     logger.debug("sds_type: %s" % sds_type)
-    func = get_adapter_func(sds_type, 'pkg', args.subparser)
+    func = get_adapter_func(sds_type, 'pkg', 'import_pkg' if args.subparser == 'import' else args.subparser)
     logger.debug("func: %s" % func)
     func(args)
 
@@ -225,8 +225,8 @@ def main():
     parser_pkg_export.add_argument('id', help='SDS package id to export')
     parser_pkg_export.add_argument('--outdir', '-o', default=".",
                                    help="root output directory of SDS package")
-    #parser_pkg_rm_job = parser_pkg_subparsers.add_parser('remove_job', help="remove Jenkins job")
-    #parser_pkg_rm_job.add_argument('name', help='jenkins job name')
+    parser_pkg_import = parser_pkg_subparsers.add_parser('import', help="import SDS package")
+    parser_pkg_import.add_argument('file', help='SDS package to import')
     parser_pkg.set_defaults(func=pkg)
 
     # parser for jobs
