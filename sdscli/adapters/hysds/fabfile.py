@@ -368,6 +368,17 @@ def ensure_venv(hysds_dir):
             mkdir('%s/run' % hysds_dir, context['OPS_USER'], context['OPS_USER'])
 
 
+def install_pkg_es_templates():
+    for role in env.effective_roles:
+        if env.host_string in env.roledefs[role]:
+            break
+    if role == 'grq': hysds_dir = "sciflo"
+    elif role == 'mozart': hysds_dir = "mozart"
+    else: raise RuntimeError("Invalid fabric function for %s." % role)
+    with prefix('source %s/bin/activate' % hysds_dir):
+        run('%s/ops/hysds_commons/scripts/install_es_template.sh %s' % (hysds_dir, role))
+
+
 ##########################
 # grq functions
 ##########################

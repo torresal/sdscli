@@ -33,7 +33,7 @@ def update_mozart(conf, comp='mozart'):
     """"Update mozart component."""
 
     # progress bar
-    with tqdm(total=22) as bar:
+    with tqdm(total=23) as bar:
 
         # ensure venv
         set_bar_desc(bar, 'Ensuring HySDS venv')
@@ -140,6 +140,11 @@ def update_mozart(conf, comp='mozart'):
         execute(fab.chmod, 600, '.netrc', roles=[comp])
         bar.update()
 
+        # update ES template
+        set_bar_desc(bar, 'Update ES template')
+        execute(fab.install_pkg_es_templates, roles=[comp])
+        bar.update()
+        
         # ship AWS creds
         set_bar_desc(bar, 'Configuring AWS creds')
         execute(fab.send_awscreds, roles=[comp])
@@ -331,6 +336,7 @@ def update_grq(conf, comp='grq'):
         # update ES template
         set_bar_desc(bar, 'Update ES template')
         execute(fab.install_es_template, roles=[comp])
+        execute(fab.install_pkg_es_templates, roles=[comp])
         bar.update()
         
         # ship AWS creds
