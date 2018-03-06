@@ -18,7 +18,7 @@ from sdscli.conf_utils import get_user_files_path, SettingsConf
 from sdscli.query_utils import run_query
 from sdscli.os_utils import validate_dir, normpath
 
-from osaka.main import get, put
+from osaka.main import get, put, rmall
 
 
 def ls(args):
@@ -231,3 +231,72 @@ def import_pkg(args):
 
     # remove package dir
     shutil.rmtree(export_dir)
+
+
+def rm(args):
+    """Remove HySDS package."""
+
+    # get user's SDS conf settings
+    conf = SettingsConf()
+
+    # container id
+    cont_id = args.id
+
+    # query for container
+    mozart_es_url = "http://{}:9200".format(conf.get('MOZART_ES_PVT_IP'))
+    grq_es_url = "http://{}:9200".format(conf.get('GRQ_ES_PVT_IP'))
+    hits = run_query(mozart_es_url, "containers", {
+        "query": {
+            "term": { "_id": cont_id }
+        }
+    })
+    if len(hits) == 0:
+        logger.error("SDS package id {} not found.".format(cont_id))
+        return 1
+    cont_info = hits[0]['_source']
+    logger.debug("cont_info: {}".format(json.dumps(cont_info, indent=2)))
+
+    # delete container from code bucket and ES
+    rmall(cont_info['url'])
+    r = requests.delete("{}/containers/container/{}".format(mozart_es_url, cont_info['id']))
+    r.raise_for_status()
+    logger.debug(r.json())
+
+    # query job specs
+    job_specs = [i['_source'] for i in run_query(mozart_es_url, "job_specs", {
+        "query": {
+            "term": { "container.raw": cont_id }
+        }
+    })]
+    logger.debug("job_specs: {}".format(json.dumps(job_specs, indent=2)))
+
+    # delete job_specs and hysds_ios
+    for job_spec in job_specs:
+        # collect hysds_ios from mozart
+        mozart_hysds_ios = [i['_source'] for i in run_query(mozart_es_url, "hysds_ios", {
+            "query": {
+                "term": { "job-specification.raw": job_spec['id'] }
+            }
+        })]
+        logger.debug("Found {} hysds_ios on mozart for {}.".format(len(mozart_hysds_ios), job_spec['id']))
+        for hysds_io in mozart_hysds_ios:
+            r = requests.delete("{}/hysds_ios/hysds_io/{}".format(mozart_es_url, hysds_io['id']))
+            r.raise_for_status()
+            logger.debug(r.json())
+        
+        # collect hysds_ios from mozart
+        grq_hysds_ios = [i['_source'] for i in run_query(grq_es_url, "hysds_ios", {
+            "query": {
+                "term": { "job-specification.raw": job_spec['id'] }
+            }
+        })]
+        logger.debug("Found {} hysds_ios on grq for {}.".format(len(grq_hysds_ios), job_spec['id']))
+        for hysds_io in grq_hysds_ios:
+            r = requests.delete("{}/hysds_ios/hysds_io/{}".format(grq_es_url, hysds_io['id']))
+            r.raise_for_status()
+            logger.debug(r.json())
+
+        # delete job_spec from ES
+        r = requests.delete("{}/job_specs/job_spec/{}".format(mozart_es_url, job_spec['id']))
+        r.raise_for_status()
+        logger.debug(r.json())

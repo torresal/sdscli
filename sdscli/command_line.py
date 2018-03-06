@@ -227,6 +227,8 @@ def main():
                                    help="root output directory of SDS package")
     parser_pkg_import = parser_pkg_subparsers.add_parser('import', help="import SDS package")
     parser_pkg_import.add_argument('file', help='SDS package to import')
+    parser_pkg_rm = parser_pkg_subparsers.add_parser('rm', help="remove SDS package")
+    parser_pkg_rm.add_argument('id', help='SDS package id to remove')
     parser_pkg.set_defaults(func=pkg)
 
     # parser for jobs
