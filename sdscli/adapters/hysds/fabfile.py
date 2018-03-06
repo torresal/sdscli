@@ -194,6 +194,10 @@ def cp_rp(src, dest):
     run('cp -rp %s %s' % (src, dest))
 
 
+def cp_rp_exists(src, dest):
+    if exists(src): run('cp -rp %s %s' % (src, dest))
+
+
 def rm_rf(path):
     run('rm -rf %s' % path)
 

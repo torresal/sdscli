@@ -556,3 +556,87 @@ def update(comp, debug=False):
     else:
         with hide('everything'):
             update_comp(comp, conf)
+
+
+def ship_verdi(conf):
+    """"Ship verdi code/config bundle."""
+
+    comp = 'verdi'
+    projects = [i.strip() for i in conf.get('PROJECTS').split()]
+
+    # progress bar
+    with tqdm(total=len(projects)+2) as bar:
+
+        # ensure venv
+        set_bar_desc(bar, 'Ensuring HySDS venv')
+        execute(fab.ensure_venv, comp, roles=[comp])
+        bar.update()
+
+        # stop services
+        set_bar_desc(bar, 'Stopping verdid')
+        execute(fab.verdid_stop, roles=[comp])
+        execute(fab.kill_hung, roles=[comp])
+        bar.update()
+
+        # iterate over projects
+        for project in projects:
+
+            set_bar_desc(bar, 'Shipping {} project'.format(project))
+
+            # progress bar
+            with tqdm(total=5) as proj_bar:
+
+                # send project-specific install.sh script and configs
+                set_bar_desc(proj_bar, 'Sending project-specific config')
+                execute(fab.rm_rf, '~/verdi/ops/install.sh', roles=[comp])
+                execute(fab.rm_rf, '~/verdi/etc/datasets.json', roles=[comp])
+                execute(fab.rm_rf, '~/verdi/etc/supervisord.conf', roles=[comp])
+                execute(fab.rm_rf, '~/verdi/etc/supervisord.conf.tmpl', roles=[comp])
+                execute(fab.send_project_config, project, roles=[comp])
+                execute(fab.chmod, '755', '~/verdi/ops/install.sh', roles=[comp])
+                execute(fab.chmod, '644', '~/verdi/etc/datasets.json', roles=[comp])
+                proj_bar.update()
+
+                # copy config
+                set_bar_desc(proj_bar, 'Copying config')
+                execute(fab.rm_rf, '~/verdi/ops/etc', roles=[comp])
+                execute(fab.cp_rp, '~/verdi/etc', '~/verdi/ops/', roles=[comp])
+                proj_bar.update()
+
+                # copy creds
+                set_bar_desc(proj_bar, 'Copying creds')
+                execute(fab.rm_rf, '~/verdi/ops/creds', roles=[comp])
+                execute(fab.mkdir, '~/verdi/ops/creds', 'ops', 'ops', roles=[comp])
+                execute(fab.cp_rp_exists, '~/.netrc', '~/verdi/ops/creds/', roles=[comp])
+                execute(fab.cp_rp_exists, '~/.boto', '~/verdi/ops/creds/', roles=[comp])
+                execute(fab.cp_rp_exists, '~/.s3cfg', '~/verdi/ops/creds/', roles=[comp])
+                execute(fab.cp_rp_exists, '~/.aws', '~/verdi/ops/creds/', roles=[comp])
+                proj_bar.update()
+
+                # send work directory stylesheets
+                style_tar = os.path.join(get_user_files_path(), 'beefed-autoindex-open_in_new_win.tbz2')
+                set_bar_desc(proj_bar, 'Sending work dir stylesheets')
+                execute(fab.rm_rf, '~/verdi/ops/beefed-autoindex-open_in_new_win.tbz2', roles=[comp])
+                execute(fab.copy, style_tar, '~/verdi/ops/beefed-autoindex-open_in_new_win.tbz2', roles=[comp])
+                proj_bar.update()
+
+                # create ops bundle
+                set_bar_desc(proj_bar, 'Creating/shipping bundle')
+                execute(fab.rm_rf, '~/{}-ops.tbz2'.format(project), roles=[comp])
+                execute(fab.ship_code, '~/verdi/ops', '~/{}-ops.tbz2'.format(project), roles=[comp])
+                proj_bar.update()
+            bar.update()
+        set_bar_desc(bar, 'Finished shipping')
+        print("")
+
+
+def ship(debug=False):
+    """Update components."""
+
+    # get user's SDS conf settings
+    conf = SettingsConf()
+
+    if debug: ship_verdi(conf)
+    else:
+        with hide('everything'):
+            ship_verdi(conf)

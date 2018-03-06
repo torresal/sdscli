@@ -57,6 +57,17 @@ def update(args):
     func(args.component, args.debug)
 
 
+def ship(args):
+    """Ship verdi code/config bundle."""
+
+    logger.debug("got to ship(): %s" % args)
+    sds_type = args.type
+    logger.debug("sds_type: %s" % sds_type)
+    func = get_adapter_func(sds_type, 'update', 'ship') 
+    logger.debug("func: %s" % func)
+    func(args.debug)
+
+
 def start(args):
     """Start SDS components."""
 
@@ -164,6 +175,12 @@ def main():
     parser_update.add_argument('component', choices=['mozart', 'grq', 'metrics', 
                                'factotum', 'ci', 'verdi', 'all'])
     parser_update.set_defaults(func=update)
+
+    # parser for ship
+    parser_ship = subparsers.add_parser('ship', help="ship verdi code/config bundle")
+    parser_ship.add_argument('type', default='hysds', const='hysds', nargs='?',
+                                  choices=['hysds', 'sdskit'])
+    parser_ship.set_defaults(func=ship)
 
     # parser for start
     parser_start = subparsers.add_parser('start', help="start SDS components")
