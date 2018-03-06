@@ -210,8 +210,8 @@ def main():
     parser_status = subparsers.add_parser('status', help="status of SDS components")
     parser_status.add_argument('--type', '-t', default='hysds', const='hysds', nargs='?',
                                choices=['hysds', 'sdskit'])
-    parser_status.add_argument('component', choices=['mozart', 'grq', 'metrics', 
-                               'factotum', 'ci', 'verdi', 'all'])
+    parser_status.add_argument('component', default='all', const='all', nargs='?',
+                               choices=['mozart', 'grq', 'metrics', 'factotum', 'ci', 'verdi', 'all'])
     parser_status.set_defaults(func=status)
 
     # parser for ci

@@ -33,7 +33,7 @@ def update_mozart(conf, comp='mozart'):
     """"Update mozart component."""
 
     # progress bar
-    with tqdm(total=23) as bar:
+    with tqdm(total=24) as bar:
 
         # ensure venv
         set_bar_desc(bar, 'Ensuring HySDS venv')
@@ -84,6 +84,12 @@ def update_mozart(conf, comp='mozart'):
                 '~/mozart/etc/orchestrator_jobs.json', roles=[comp])
         execute(fab.copy, '~/mozart/ops/hysds/configs/orchestrator/orchestrator_datasets.json',
                 '~/mozart/etc/orchestrator_datasets.json', roles=[comp])
+        bar.update()
+
+        # update job_creators
+        set_bar_desc(bar, 'Updating job_creators')
+        execute(fab.rm_rf, '~/mozart/etc/job_creators', roles=[comp])
+        execute(fab.cp_rp, '~/mozart/ops/hysds/scripts/job_creators', '~/mozart/etc/', roles=[comp])
         bar.update()
 
         #update datasets config; overwrite datasets config with domain-specific config
