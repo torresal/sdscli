@@ -30,4 +30,4 @@ def ls(args):
     for importer, mod_name, ispkg in pkgutil.iter_modules(sdscli.cloud.__path__):
         mod = import_module('sdscli.cloud.{}.utils'.format(mod_name))
         print("{}: {}".format(mod_name, highlight("configured", 'green') if 
-              mod.is_configured() else highlight("not configured", 'red')))
+              mod.is_configured() else highlight("unimplemented or not configured", 'red')))
