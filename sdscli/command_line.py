@@ -8,27 +8,19 @@ import os, sys, importlib, json, yaml, traceback, argparse, logging
 from importlib import import_module
 
 import sdscli
+from sdscli.func_utils import get_module, get_func
 from sdscli.log_utils import logger
-
-
-def get_adapter_module(sds_type, mod_name):
-    """Import adapter module."""
-
-    try:
-        return import_module('sdscli.adapters.%s.%s' % (sds_type, mod_name))
-    except ImportError:
-        logger.error('Failed to import adapter module "%s" for SDS type "%s".' % (mod_name, sds_type))
-        logger.error('Not implemented yet. Mahalo for trying. ;)')
-        sys.exit(1)
 
 
 def get_adapter_func(sds_type, mod_name, func_name):
     """Import adapter function."""
 
-    adapter_mod = get_adapter_module(sds_type, mod_name)
-    logger.debug("adapter_mod: %s" % adapter_mod)
-    try:
-        return getattr(adapter_mod, func_name)
+    adapter_mod = 'sdscli.adapters.%s.%s' % (sds_type, mod_name)
+    try: return get_func(adapter_mod, func_name)
+    except ImportError:
+        logger.error('Failed to import adapter module "%s" for SDS type "%s".' % (mod_name, sds_type))
+        logger.error('Not implemented yet. Mahalo for trying. ;)')
+        sys.exit(1)
     except AttributeError:
         logger.error('Failed to get function "%s" from adapter module "%s".' % (func_name, adapter_mod))
         logger.error('Not implemented yet. Mahalo for trying. ;)')
@@ -265,6 +257,11 @@ def main():
                                choices=['hysds', 'sdskit'])
     parser_cloud_subparsers = parser_cloud.add_subparsers(dest='subparser', help='SDS cloud management functions')
     parser_cloud_ls = parser_cloud_subparsers.add_parser('ls', help="list configured cloud vendors")
+    parser_cloud_asg = parser_cloud_subparsers.add_parser('asg', help="SDS cloud Autoscaling management")
+    parser_cloud_asg.add_argument('--cloud', '-c', default='aws', const='aws', nargs='?',
+                                  choices=['aws', 'azure', 'gcp'])
+    parser_cloud_asg_subparsers = parser_cloud_asg.add_subparsers(dest='subparser2', help='SDS cloud Autoscaling management functions')
+    parser_cloud_asg_ls = parser_cloud_asg_subparsers.add_parser('ls', help="list Autoscaling groups")
     #parser_cloud_export = parser_cloud_subparsers.add_parser('export', help="export SDS package")
     #parser_cloud_export.add_argument('id', help='SDS package id to export')
     #parser_cloud_export.add_argument('--outdir', '-o', default=".",

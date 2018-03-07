@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-import os, boto3
+import os, sys, boto3
 from botocore.exceptions import NoCredentialsError
 
 from sdscli.log_utils import logger
@@ -14,3 +14,15 @@ def is_configured():
     except NoCredentialsError:
         return False
     return True
+
+
+def cloud_config_check(func):
+    """Wrapper function to perform cloud config check."""
+
+    def wrapper(*args, **kwargs):
+        if is_configured():
+            return func(*args, **kwargs)
+        else:
+            logger.error("Not configured for AWS.")
+            sys.exit(1)
+    return wrapper

@@ -6,7 +6,6 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import os, json, pkgutil, traceback
-from importlib import import_module
 from fabric.api import execute, hide
 
 from prompt_toolkit.shortcuts import prompt, print_tokens
@@ -17,6 +16,7 @@ from pygments.token import Token
 from sdscli.log_utils import logger
 from sdscli.conf_utils import get_user_files_path, SettingsConf
 from sdscli.prompt_utils import highlight
+from sdscli.func_utils import get_module, get_func
 import sdscli.cloud
 
 
@@ -28,6 +28,29 @@ def ls(args):
 
     # check which cloud platforms configured
     for importer, mod_name, ispkg in pkgutil.iter_modules(sdscli.cloud.__path__):
-        mod = import_module('sdscli.cloud.{}.utils'.format(mod_name))
+        mod = get_module('sdscli.cloud.{}.utils'.format(mod_name))
         print("{}: {}".format(mod_name, highlight("configured", 'green') if 
               mod.is_configured() else highlight("unimplemented or not configured", 'red')))
+
+
+def asg(args):
+    """ASG management functions."""
+
+    # print args
+    logger.debug("In asg(): {}".format(args))
+
+    # get user's SDS conf settings
+    conf = SettingsConf()
+
+    # get func
+    try:
+        func = get_func('sdscli.cloud.{}.{}'.format(args.cloud, args.subparser), args.subparser2)
+    except ImportError:
+        logger.error('Not implemented yet. Mahalo for trying. ;)')
+        return 1
+    except AttributeError:
+        logger.error('Not implemented yet. Mahalo for trying. ;)')
+        return 1
+
+    # run
+    return func(args, conf)
