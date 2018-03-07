@@ -134,6 +134,17 @@ def pkg(args):
     func(args)
 
 
+def cloud(args):
+    """SDS cloud managment functions."""
+
+    logger.debug("got to cloud(): %s" % args)
+    sds_type = args.type
+    logger.debug("sds_type: %s" % sds_type)
+    func = get_adapter_func(sds_type, 'cloud', args.subparser)
+    logger.debug("func: %s" % func)
+    func(args)
+
+
 def job_list(args):
     """Configure SDS config file."""
 
@@ -247,6 +258,22 @@ def main():
     parser_pkg_rm = parser_pkg_subparsers.add_parser('rm', help="remove SDS package")
     parser_pkg_rm.add_argument('id', help='SDS package id to remove')
     parser_pkg.set_defaults(func=pkg)
+
+    # parser for cloud
+    parser_cloud = subparsers.add_parser('cloud', help="SDS cloud management")
+    parser_cloud.add_argument('--type', '-t', default='hysds', const='hysds', nargs='?',
+                               choices=['hysds', 'sdskit'])
+    parser_cloud_subparsers = parser_cloud.add_subparsers(dest='subparser', help='SDS cloud management functions')
+    parser_cloud_ls = parser_cloud_subparsers.add_parser('ls', help="list configured cloud vendors")
+    #parser_cloud_export = parser_cloud_subparsers.add_parser('export', help="export SDS package")
+    #parser_cloud_export.add_argument('id', help='SDS package id to export')
+    #parser_cloud_export.add_argument('--outdir', '-o', default=".",
+    #                               help="root output directory of SDS package")
+    #parser_cloud_import = parser_cloud_subparsers.add_parser('import', help="import SDS package")
+    #parser_cloud_import.add_argument('file', help='SDS package to import')
+    #parser_cloud_rm = parser_cloud_subparsers.add_parser('rm', help="remove SDS package")
+    #parser_cloud_rm.add_argument('id', help='SDS package id to remove')
+    parser_cloud.set_defaults(func=cloud)
 
     # parser for jobs
     parser_job = subparsers.add_parser('job', help="SDS job subcommand")
