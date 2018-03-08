@@ -46,7 +46,7 @@ def update(args):
     logger.debug("sds_type: %s" % sds_type)
     func = get_adapter_func(sds_type, 'update', 'update') 
     logger.debug("func: %s" % func)
-    func(args.component, args.debug)
+    func(args.component, args.debug, args.force)
 
 
 def ship(args):
@@ -68,7 +68,7 @@ def start(args):
     logger.debug("sds_type: %s" % sds_type)
     func = get_adapter_func(sds_type, 'start', 'start') 
     logger.debug("func: %s" % func)
-    func(args.component, args.debug)
+    func(args.component, args.debug, args.force)
 
 
 def stop(args):
@@ -79,7 +79,7 @@ def stop(args):
     logger.debug("sds_type: %s" % sds_type)
     func = get_adapter_func(sds_type, 'stop', 'stop') 
     logger.debug("func: %s" % func)
-    func(args.component, args.debug)
+    func(args.component, args.debug, args.force)
 
 
 def reset(args):
@@ -90,7 +90,7 @@ def reset(args):
     logger.debug("sds_type: %s" % sds_type)
     func = get_adapter_func(sds_type, 'reset', 'reset') 
     logger.debug("func: %s" % func)
-    func(args.component, args.debug)
+    func(args.component, args.debug, args.force)
 
 
 def status(args):
@@ -177,6 +177,8 @@ def main():
                                   choices=['hysds', 'sdskit'])
     parser_update.add_argument('component', choices=['mozart', 'grq', 'metrics', 
                                'factotum', 'ci', 'verdi', 'all'])
+    parser_update.add_argument('--force', '-f', action='store_true',
+                             help="force update without user confirmation")
     parser_update.set_defaults(func=update)
 
     # parser for ship
@@ -191,6 +193,8 @@ def main():
                               choices=['hysds', 'sdskit'])
     parser_start.add_argument('component', choices=['mozart', 'grq', 'metrics', 
                               'factotum', 'all'])
+    parser_start.add_argument('--force', '-f', action='store_true',
+                              help="force start without user confirmation")
     parser_start.set_defaults(func=start)
 
     # parser for stop
@@ -199,6 +203,8 @@ def main():
                              choices=['hysds', 'sdskit'])
     parser_stop.add_argument('component', choices=['mozart', 'grq', 'metrics', 
                              'factotum', 'all'])
+    parser_stop.add_argument('--force', '-f', action='store_true',
+                             help="force stop without user confirmation")
     parser_stop.set_defaults(func=stop)
 
     # parser for reset
@@ -207,6 +213,8 @@ def main():
                               choices=['hysds', 'sdskit'])
     parser_reset.add_argument('component', choices=['mozart', 'grq', 'metrics', 
                               'factotum', 'all'])
+    parser_reset.add_argument('--force', '-f', action='store_true',
+                             help="force reset without user confirmation")
     parser_reset.set_defaults(func=reset)
 
     # parser for status

@@ -310,7 +310,8 @@ def configure():
                                                    (Token, " already exists. "),
                                                    (Token.Alert, "Customizations will be lost or overwritten!"),
                                                    (Token, " Continue [y/n]: ")],
-                      validator=YesNoValidator(), default='n', style=prompt_style) == 'y'
+                      validator=YesNoValidator(), style=prompt_style) == 'y'
+                      #validator=YesNoValidator(), default='n', style=prompt_style) == 'y'
         if not cont: return 0
         with open(cfg_file) as f:
             cfg = yaml.load(f)

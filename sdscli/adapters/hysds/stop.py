@@ -131,8 +131,15 @@ def stop_comp(comp, conf):
         if comp == 'factotum': stop_factotum(conf)
 
 
-def stop(comp, debug=False):
+def stop(comp, debug=False, force=False):
     """Stop components."""
+
+    # prompt user
+    if not force:
+        cont = prompt(get_prompt_tokens=lambda x: [(Token.Alert, 
+                      "Stopping component[s]: {}. Continue [y/n]: ".format(comp)), (Token, " ")],
+                      validator=YesNoValidator(), style=prompt_style) == 'y'
+        if not cont: return 0
 
     # get user's SDS conf settings
     conf = SettingsConf()

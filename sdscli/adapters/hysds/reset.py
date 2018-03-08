@@ -176,8 +176,15 @@ def reset_comp(comp, conf):
         if comp == 'factotum': reset_factotum(conf)
 
 
-def reset(comp, debug=False):
+def reset(comp, debug=False, force=False):
     """Start components."""
+
+    # prompt user
+    if not force:
+        cont = prompt(get_prompt_tokens=lambda x: [(Token.Alert, 
+                      "Resetting component[s]: {}. Continue [y/n]: ".format(comp)), (Token, " ")],
+                      validator=YesNoValidator(), style=prompt_style) == 'y'
+        if not cont: return 0
 
     # get user's SDS conf settings
     conf = SettingsConf()

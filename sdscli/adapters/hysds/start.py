@@ -130,8 +130,15 @@ def start_comp(comp, conf):
         if comp == 'factotum': start_factotum(conf)
 
 
-def start(comp, debug=False):
+def start(comp, debug=False, force=False):
     """Start components."""
+
+    # prompt user
+    if not force:
+        cont = prompt(get_prompt_tokens=lambda x: [(Token.Alert, 
+                      "Starting component[s]: {}. Continue [y/n]: ".format(comp)), (Token, " ")],
+                      validator=YesNoValidator(), style=prompt_style) == 'y'
+        if not cont: return 0
 
     # get user's SDS conf settings
     conf = SettingsConf()

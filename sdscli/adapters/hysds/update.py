@@ -550,8 +550,15 @@ def update_comp(comp, conf):
         if comp == 'verdi': update_verdi(conf)
 
 
-def update(comp, debug=False):
+def update(comp, debug=False, force=False):
     """Update components."""
+
+    # prompt user
+    if not force:
+        cont = prompt(get_prompt_tokens=lambda x: [(Token.Alert, 
+                      "Updating component[s]: {}. Continue [y/n]: ".format(comp)), (Token, " ")],
+                      validator=YesNoValidator(), style=prompt_style) == 'y'
+        if not cont: return 0
 
     # get user's SDS conf settings
     conf = SettingsConf()
