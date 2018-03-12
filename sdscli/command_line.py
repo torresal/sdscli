@@ -57,7 +57,7 @@ def ship(args):
     logger.debug("sds_type: %s" % sds_type)
     func = get_adapter_func(sds_type, 'update', 'ship') 
     logger.debug("func: %s" % func)
-    func(args.debug)
+    func(args.encrypt, args.debug)
 
 
 def start(args):
@@ -185,6 +185,8 @@ def main():
     parser_ship = subparsers.add_parser('ship', help="ship verdi code/config bundle")
     parser_ship.add_argument('type', default='hysds', const='hysds', nargs='?',
                                   choices=['hysds', 'sdskit'])
+    parser_ship.add_argument('--encrypt', '-e', action='store_true',
+                             help="encrypt code/config bundle")
     parser_ship.set_defaults(func=ship)
 
     # parser for start

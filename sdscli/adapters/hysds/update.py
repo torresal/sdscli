@@ -571,7 +571,7 @@ def update(comp, debug=False, force=False):
             update_comp(comp, conf)
 
 
-def ship_verdi(conf):
+def ship_verdi(conf, encrypt=False):
     """"Ship verdi code/config bundle."""
 
     comp = 'verdi'
@@ -636,20 +636,20 @@ def ship_verdi(conf):
                 # create ops bundle
                 set_bar_desc(proj_bar, 'Creating/shipping bundle')
                 execute(fab.rm_rf, '~/{}-ops.tbz2'.format(project), roles=[comp])
-                execute(fab.ship_code, '~/verdi/ops', '~/{}-ops.tbz2'.format(project), roles=[comp])
+                execute(fab.ship_code, '~/verdi/ops', '~/{}-ops.tbz2'.format(project), encrypt, roles=[comp])
                 proj_bar.update()
             bar.update()
         set_bar_desc(bar, 'Finished shipping')
         print("")
 
 
-def ship(debug=False):
+def ship(encrypt, debug=False):
     """Update components."""
 
     # get user's SDS conf settings
     conf = SettingsConf()
 
-    if debug: ship_verdi(conf)
+    if debug: ship_verdi(conf, encrypt)
     else:
         with hide('everything'):
-            ship_verdi(conf)
+            ship_verdi(conf, encrypt)
