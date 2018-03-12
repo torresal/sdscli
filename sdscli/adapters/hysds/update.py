@@ -575,6 +575,7 @@ def ship_verdi(conf, encrypt=False):
     """"Ship verdi code/config bundle."""
 
     comp = 'verdi'
+    venue = conf.get('VENUE', 'ops')
     projects = [i.strip() for i in conf.get('PROJECTS').split()]
 
     # progress bar
@@ -633,10 +634,10 @@ def ship_verdi(conf, encrypt=False):
                 execute(fab.copy, style_tar, '~/verdi/ops/beefed-autoindex-open_in_new_win.tbz2', roles=[comp])
                 proj_bar.update()
 
-                # create ops bundle
+                # create venue bundle
                 set_bar_desc(proj_bar, 'Creating/shipping bundle')
-                execute(fab.rm_rf, '~/{}-ops.tbz2'.format(project), roles=[comp])
-                execute(fab.ship_code, '~/verdi/ops', '~/{}-ops.tbz2'.format(project), encrypt, roles=[comp])
+                execute(fab.rm_rf, '~/{}-{}.tbz2'.format(project, venue), roles=[comp])
+                execute(fab.ship_code, '~/verdi/ops', '~/{}-{}.tbz2'.format(project, venue), encrypt, roles=[comp])
                 proj_bar.update()
             bar.update()
         set_bar_desc(bar, 'Finished shipping')

@@ -129,6 +129,7 @@ VERDI_GID: {VERDI_GID}
 AUTOSCALE_WORKER_NAME: {AUTOSCALE_WORKER_NAME}
 AUTOSCALE_GROUP: {AUTOSCALE_GROUP}
 PROJECTS: {PROJECTS}
+VENUE: {VENUE}
 
 # AWS custom metric for job count
 MONITORED_QUEUE: {MONITORED_QUEUE}
@@ -271,6 +272,7 @@ CFG_DEFAULTS = {
         [ "AUTOSCALE_WORKER_NAME", ""],
         [ "AUTOSCALE_GROUP", ""],
         [ "PROJECTS", "dumby dumby_urgent"],
+        [ "VENUE", "ops"],
         [ "MONITORED_QUEUE", "dumby-job_worker-large"],
     ]
 }
