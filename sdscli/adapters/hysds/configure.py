@@ -288,13 +288,14 @@ def copy_files():
     sds_files = glob(os.path.join(sds_files_path, '*'))
     for sds_file in sds_files:
         if os.path.basename(sds_file) == 'cluster.py':
-            shutil.copy(sds_file, os.path.dirname(get_user_config_path()))
+            user_file = os.path.join(os.path.dirname(get_user_config_path()), os.path.basename(sds_file))
+            if not os.path.exists(user_file): shutil.copy(sds_file, user_file)
         else:    
             user_file = os.path.join(files_path, os.path.basename(sds_file))
-            if os.path.isdir(sds_file) and not os.path.isdir(user_file):
+            if os.path.isdir(sds_file) and not os.path.exists(user_file):
                 shutil.copytree(sds_file, user_file)
                 logger.debug("Copying dir %s to %s" % (sds_file, user_file))
-            elif os.path.isfile(sds_file) and not os.path.isfile(user_file):
+            elif os.path.isfile(sds_file) and not os.path.exists(user_file):
                 shutil.copy(sds_file, user_file)
                 logger.debug("Copying file %s to %s" % (sds_file, user_file))
 

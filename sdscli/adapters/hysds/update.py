@@ -575,7 +575,7 @@ def ship_verdi(conf, encrypt=False):
     """"Ship verdi code/config bundle."""
 
     comp = 'verdi'
-    venue = conf.get('VENUE', 'ops')
+    venue = conf.get('VENUE')
     projects = [i.strip() for i in conf.get('PROJECTS').split()]
 
     # progress bar
