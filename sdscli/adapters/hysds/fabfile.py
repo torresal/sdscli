@@ -759,7 +759,7 @@ def ship_code(cwd, tar_file, encrypt=False):
     if encrypt is False:
         run('aws s3 cp %s s3://%s/' % (tar_file, ctx['CODE_BUCKET']))
     else:
-        run('aws s3 cp --sse AES256 %s s3://%s/' % (tar_file, ctx['CODE_BUCKET']))
+        run('aws s3 cp --sse %s s3://%s/' % (tar_file, ctx['CODE_BUCKET']))
 
 
 ##########################
