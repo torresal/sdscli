@@ -144,6 +144,21 @@ def resolve_files_dir(fname, files_dir):
     return user_path if os.path.exists(os.path.join(user_path, fname)) else files_dir
 
 
+def resolve_role():
+    """Resolve role and hysds directory."""
+
+    for role in env.effective_roles:
+        if env.host_string in env.roledefs[role]:
+            if '@' in env.host_string:
+                hostname = env.host_string.split('@')[1]
+            else: hostname = env.host_string
+            break
+    if role in ('factotum', 'ci'): hysds_dir = "verdi"
+    elif role == 'grq': hysds_dir = "sciflo"
+    else: hysds_dir = role
+    return role, hysds_dir, hostname
+
+
 def host_type():
     run('uname -s')
 
@@ -346,12 +361,7 @@ def stop_docker_containers():
 
 
 def status():
-    for role in env.effective_roles:
-        if env.host_string in env.roledefs[role]:
-            break
-    if role in ('factotum', 'ci'): hysds_dir = "verdi"
-    elif role == 'grq': hysds_dir = "sciflo"
-    else: hysds_dir = role
+    role, hysds_dir, hostname = resolve_role()
     if exists('%s/run/supervisor.sock' % hysds_dir):
         with prefix('source %s/bin/activate' % hysds_dir):
             run('supervisorctl status')
@@ -373,12 +383,9 @@ def ensure_venv(hysds_dir):
 
 
 def install_pkg_es_templates():
-    for role in env.effective_roles:
-        if env.host_string in env.roledefs[role]:
-            break
-    if role == 'grq': hysds_dir = "sciflo"
-    elif role == 'mozart': hysds_dir = "mozart"
-    else: raise RuntimeError("Invalid fabric function for %s." % role)
+    role, hysds_dir, hostname = resolve_role()
+    if role not in ('grq', 'mozart'):
+        raise RuntimeError("Invalid fabric function for %s." % role)
     with prefix('source %s/bin/activate' % hysds_dir):
         run('%s/ops/hysds_commons/scripts/install_es_template.sh %s' % (hysds_dir, role))
 
@@ -624,11 +631,7 @@ def reload_configuration():
 
 def send_shipper_conf(node_type, log_dir, cluster_jobs, redis_ip_job_status,
                       cluster_metrics, redis_ip_metrics):
-    for role in env.effective_roles:
-        if env.host_string in env.roledefs[role]:
-            if '@' in env.host_string:
-                hostname = env.host_string.split('@')[1]
-            else: hostname = env.host_string
+    role, hysds_dir, hostname = resolve_role()
 
     ctx = get_context(node_type)
     if node_type == 'mozart':
