@@ -221,16 +221,17 @@ def sudo_rm_rf(path):
     run('sudo rm -rf %s' % path)
 
 
-def send_template(tmpl, dest, tmpl_dir=None):
+def send_template(tmpl, dest, tmpl_dir=None, node_type=None):
     if tmpl_dir is None: tmpl_dir = get_user_files_path()
     else: tmpl_dir = os.path.expanduser(tmpl_dir)
-    upload_template(tmpl, dest, use_jinja=True, context=get_context(), template_dir=tmpl_dir)
+    upload_template(tmpl, dest, use_jinja=True, context=get_context(node_type),
+                    template_dir=tmpl_dir)
 
 
-def send_template_user_override(tmpl, dest, tmpl_dir=None):
+def send_template_user_override(tmpl, dest, tmpl_dir=None, node_type=None):
     if tmpl_dir is None: tmpl_dir = get_user_files_path()
     else: tmpl_dir = os.path.expanduser(tmpl_dir)
-    upload_template(tmpl, dest, use_jinja=True, context=get_context(),
+    upload_template(tmpl, dest, use_jinja=True, context=get_context(node_type),
                     template_dir=resolve_files_dir(tmpl, tmpl_dir))
 
 

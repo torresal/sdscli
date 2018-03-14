@@ -142,7 +142,7 @@ def update_mozart(conf, comp='mozart'):
 
         # ship netrc
         set_bar_desc(bar, 'Configuring netrc')
-        execute(fab.send_template, 'netrc.mozart', '.netrc', roles=[comp])
+        execute(fab.send_template, 'netrc.mozart', '.netrc', node_type='mozart', roles=[comp])
         execute(fab.chmod, 600, '.netrc', roles=[comp])
         bar.update()
 
