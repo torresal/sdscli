@@ -258,3 +258,37 @@ def create(args, conf):
         asg_info = create_asg(c, **asg_args)
         logger.debug("Autoscaling group {}: {}".format(asg, pformat(asg_info)))
         print("Created autoscaling group {}".format(asg))
+
+        # add target tracking scaling policies
+        for size in ('large', 'small'):
+            queue = "{}-job_worker-{}".format(project, size) 
+            policy_name = "{}-{}-target-tracking".format(asg, size)
+            metric_name = "JobsWaitingPerInstance-{}-{}".format(queue, asg)
+            ttsp_args = {
+                'AutoScalingGroupName': asg,
+                'PolicyName': policy_name,
+                'PolicyType': 'TargetTrackingScaling',
+                'TargetTrackingConfiguration': {
+                    'CustomizedMetricSpecification': {
+                        'MetricName': metric_name,
+                        'Namespace': 'HySDS',
+                        'Dimensions': [
+                            {
+                                'Name': 'AutoScalingGroupName',
+                                'Value': asg,
+                            },
+                            {
+                                'Name': 'Queue',
+                                'Value': queue,
+                            }
+                        ],
+                        'Statistic': 'Maximum'
+                    },
+                    'TargetValue': 1.0,
+                    'DisableScaleIn': True
+                }, 
+            }
+            logger.debug("ttsp_args: {}".format(pformat(ttsp_args)))
+            ttsp_info = c.put_scaling_policy(**ttsp_args)
+            logger.debug("Target tracking scaling policy {}: {}".format(policy_name, pformat(ttsp_info)))
+            print("Added target tracking scaling policy {} to {}".format(policy_name, asg))
