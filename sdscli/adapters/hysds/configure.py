@@ -126,7 +126,6 @@ VERDI_PRIMER_IMAGE: {VERDI_PRIMER_IMAGE}
 VERDI_TAG: {VERDI_TAG}
 VERDI_UID: {VERDI_UID}
 VERDI_GID: {VERDI_GID}
-AUTOSCALE_WORKER_NAME: {AUTOSCALE_WORKER_NAME}
 AUTOSCALE_GROUP: {AUTOSCALE_GROUP}
 PROJECTS: {PROJECTS}
 VENUE: {VENUE}
@@ -266,7 +265,6 @@ CFG_DEFAULTS = {
         [ "VERDI_TAG", ""],
         [ "VERDI_UID", os.getuid()],
         [ "VERDI_GID", os.getgid()],
-        [ "AUTOSCALE_WORKER_NAME", ""],
         [ "AUTOSCALE_GROUP", ""],
         [ "PROJECTS", "dumby dumby_urgent"],
         [ "VENUE", "ops"],

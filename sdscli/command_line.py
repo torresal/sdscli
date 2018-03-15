@@ -272,6 +272,7 @@ def main():
                                   choices=['aws', 'azure', 'gcp'])
     parser_cloud_asg_subparsers = parser_cloud_asg.add_subparsers(dest='subparser2', help='SDS cloud Autoscaling management functions')
     parser_cloud_asg_ls = parser_cloud_asg_subparsers.add_parser('ls', help="list Autoscaling groups")
+    parser_cloud_asg_create = parser_cloud_asg_subparsers.add_parser('create', help="create Autoscaling group")
     #parser_cloud_export = parser_cloud_subparsers.add_parser('export', help="export SDS package")
     #parser_cloud_export.add_argument('id', help='SDS package id to export')
     #parser_cloud_export.add_argument('--outdir', '-o', default=".",
