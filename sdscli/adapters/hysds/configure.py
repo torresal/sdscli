@@ -126,13 +126,9 @@ VERDI_PRIMER_IMAGE: {VERDI_PRIMER_IMAGE}
 VERDI_TAG: {VERDI_TAG}
 VERDI_UID: {VERDI_UID}
 VERDI_GID: {VERDI_GID}
-AUTOSCALE_WORKER_NAME: {AUTOSCALE_WORKER_NAME}
 AUTOSCALE_GROUP: {AUTOSCALE_GROUP}
 PROJECTS: {PROJECTS}
 VENUE: {VENUE}
-
-# AWS custom metric for job count
-MONITORED_QUEUE: {MONITORED_QUEUE}
 
 # git oauth token
 GIT_OAUTH_TOKEN: {GIT_OAUTH_TOKEN}
@@ -269,11 +265,9 @@ CFG_DEFAULTS = {
         [ "VERDI_TAG", ""],
         [ "VERDI_UID", os.getuid()],
         [ "VERDI_GID", os.getgid()],
-        [ "AUTOSCALE_WORKER_NAME", ""],
         [ "AUTOSCALE_GROUP", ""],
         [ "PROJECTS", "dumby dumby_urgent"],
         [ "VENUE", "ops"],
-        [ "MONITORED_QUEUE", "dumby-job_worker-large"],
     ]
 }
 

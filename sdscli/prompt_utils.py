@@ -40,9 +40,46 @@ class YesNoValidator(Validator):
 
 class IpAddressValidator(Validator):
     def validate(self, document):
-        match = re.search(r'^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$')
+        text = document.text.lower()
+        match = re.search(r'^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$', text)
         if not match:
             raise ValidationError(message='Input needs to be valid IP address',
+                                  cursor_position=len(text))
+
+
+class SelectionValidator(Validator):
+    def validate(self, document):
+        text = document.text.lower()
+        match = re.search(r'^\s*\d+\s*$', text)
+        if not match:
+            raise ValidationError(message='Input needs to be integer',
+                                  cursor_position=len(text))
+
+
+class MultipleSelectionValidator(Validator):
+    def validate(self, document):
+        text = document.text.lower()
+        match = re.search(r'^\s*(\d+\s*)+$', text)
+        if not match:
+            raise ValidationError(message='Inputs need to be integer[s] separated by space',
+                                  cursor_position=len(text))
+
+
+class Ec2InstanceTypeValidator(Validator):
+    def validate(self, document):
+        text = document.text.lower()
+        match = re.search(r'^\s*\w+\.\w+\s*$', text)
+        if not match:
+            raise ValidationError(message='Input needs to be EC2 instance type',
+                                  cursor_position=len(text))
+
+
+class PriceValidator(Validator):
+    def validate(self, document):
+        text = document.text.lower()
+        match = re.search(r'^\s*\d*\.\d+\s*$', text)
+        if not match:
+            raise ValidationError(message='Input needs to be dollar amount e.g. 0.001',
                                   cursor_position=len(text))
 
 

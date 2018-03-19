@@ -395,9 +395,9 @@ def install_pkg_es_templates():
 # grq functions
 ##########################
 
-def grqd_start():
+def grqd_start(force=False):
     mkdir('sciflo/run', context['OPS_USER'], context['OPS_USER'])
-    if not exists('sciflo/run/supervisord.pid'):
+    if not exists('sciflo/run/supervisord.pid') or force:
         with prefix('source sciflo/bin/activate'):
             run('supervisord')
 
@@ -407,7 +407,7 @@ def grqd_clean_start():
     #with prefix('source %s/sciflo/bin/activate' % ops_dir):
     #    with cd(os.path.join(ops_dir, 'sciflo/ops/grq2/scripts')):
     #        run('./reset_dumby_indices.sh')
-    grqd_start()
+    grqd_start(True)
 
 
 def grqd_stop():
@@ -429,15 +429,15 @@ def clean_hysds_ios():
 # mozart functions
 ##########################
 
-def mozartd_start():
-    if not exists('mozart/run/supervisord.pid'):
+def mozartd_start(force=False):
+    if not exists('mozart/run/supervisord.pid') or force:
         with prefix('source mozart/bin/activate'):
             run('supervisord')
 
 
 def mozartd_clean_start():
     run('rm -rf %s/mozart/log/*' % ops_dir)
-    mozartd_start()
+    mozartd_start(True)
 
 
 def mozartd_stop():
@@ -482,15 +482,15 @@ def mozart_es_flush():
 # metrics functions
 ##########################
 
-def metricsd_start():
-    if not exists('metrics/run/supervisord.pid'):
+def metricsd_start(force=False):
+    if not exists('metrics/run/supervisord.pid') or force:
         with prefix('source metrics/bin/activate'):
             run('supervisord')
 
 
 def metricsd_clean_start():
     run('rm -rf /home/ops/metrics/log/*')
-    metricsd_start()
+    metricsd_start(True)
 
 
 def metricsd_stop():
@@ -515,15 +515,15 @@ def kill_hung():
     ps_x()
 
 
-def verdid_start():
-    if not exists('verdi/run/supervisord.pid'):
+def verdid_start(force=False):
+    if not exists('verdi/run/supervisord.pid') or force:
         with prefix('source verdi/bin/activate'):
             run('supervisord')
 
 
 def verdid_clean_start():
     run('rm -rf /data/work/scifloWork-ops/* /data/work/jobs/* %s/verdi/log/*' % ops_dir)
-    verdid_start()
+    verdid_start(True)
 
 
 def verdid_stop():
