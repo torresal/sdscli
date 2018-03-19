@@ -241,8 +241,6 @@ def main():
     parser_ci_add_job.add_argument('--branch', '-b', default=None,
                                    help="register git branch instead of release")
     parser_ci_add_job.add_argument('--token', '-k', action='store_true', help="use configured OAuth token")
-    #parser_ci_rm_job = parser_ci_subparsers.add_parser('remove_job', help="remove Jenkins job")
-    #parser_ci_rm_job.add_argument('name', help='jenkins job name')
     parser_ci.set_defaults(func=ci)
 
     # parser for pkg
@@ -273,14 +271,6 @@ def main():
     parser_cloud_asg_subparsers = parser_cloud_asg.add_subparsers(dest='subparser2', help='SDS cloud Autoscaling management functions')
     parser_cloud_asg_ls = parser_cloud_asg_subparsers.add_parser('ls', help="list Autoscaling groups")
     parser_cloud_asg_create = parser_cloud_asg_subparsers.add_parser('create', help="create Autoscaling group")
-    #parser_cloud_export = parser_cloud_subparsers.add_parser('export', help="export SDS package")
-    #parser_cloud_export.add_argument('id', help='SDS package id to export')
-    #parser_cloud_export.add_argument('--outdir', '-o', default=".",
-    #                               help="root output directory of SDS package")
-    #parser_cloud_import = parser_cloud_subparsers.add_parser('import', help="import SDS package")
-    #parser_cloud_import.add_argument('file', help='SDS package to import')
-    #parser_cloud_rm = parser_cloud_subparsers.add_parser('rm', help="remove SDS package")
-    #parser_cloud_rm.add_argument('id', help='SDS package id to remove')
     parser_cloud.set_defaults(func=cloud)
 
     # parser for jobs
