@@ -271,6 +271,11 @@ def main():
     parser_cloud_asg_subparsers = parser_cloud_asg.add_subparsers(dest='subparser2', help='SDS cloud Autoscaling management functions')
     parser_cloud_asg_ls = parser_cloud_asg_subparsers.add_parser('ls', help="list Autoscaling groups")
     parser_cloud_asg_create = parser_cloud_asg_subparsers.add_parser('create', help="create Autoscaling group")
+    parser_cloud_storage = parser_cloud_subparsers.add_parser('storage', help="SDS cloud storage management")
+    parser_cloud_storage.add_argument('--cloud', '-c', default='aws', const='aws', nargs='?',
+                                  choices=['aws', 'azure', 'gcp'])
+    parser_cloud_storage_subparsers = parser_cloud_storage.add_subparsers(dest='subparser2', help='SDS cloud storage management functions')
+    parser_cloud_storage_ls = parser_cloud_storage_subparsers.add_parser('ls', help="list buckets")
     parser_cloud.set_defaults(func=cloud)
 
     # parser for jobs

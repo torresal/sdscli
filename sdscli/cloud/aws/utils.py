@@ -99,3 +99,11 @@ def create_asg(c=None, **kargs):
 
     if c is None: c = boto3.client('autoscaling')
     return c.create_auto_scaling_group(**kargs)
+
+
+@cloud_config_check
+def get_buckets(c=None, **kargs):
+    """List all buckets."""
+
+    if c is None: c = boto3.client('s3')
+    return c.list_buckets(**kargs).get('Buckets', [])
