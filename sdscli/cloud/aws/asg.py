@@ -119,7 +119,7 @@ def create(args, conf):
     logger.debug("cur_keypairs: {}".format(pformat(cur_keypairs)))
 
     # get current AMIs
-    verdi_re = re.compile(r'verdi', re.IGNORECASE)
+    verdi_re = re.compile(r'(?:verdi|autoscale)', re.IGNORECASE)
     cur_images = OrderedDict([(i['ImageId'], i) for i in 
                                filter(lambda x: verdi_re.search(x['Name']),
                                       sorted(get_images(c=ec2, Owners=['self']), 
