@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import os, sys, boto3
-from botocore.exceptions import NoCredentialsError
+from botocore.exceptions import NoCredentialsError, ClientError
 
 from sdscli.log_utils import logger
 
@@ -107,3 +107,18 @@ def get_buckets(c=None, **kargs):
 
     if c is None: c = boto3.client('s3')
     return c.list_buckets(**kargs).get('Buckets', [])
+
+
+@cloud_config_check
+def configure_bucket_website(bucket_name, c=None, **kargs):
+    """Configure bucket website for bucket."""
+
+    if c is None: c = boto3.resource('s3')
+    bw = c.BucketWebsite(bucket_name)
+    try:
+        bw.put(**kargs)
+    except ClientError, e:
+        logger.error("Failed to put bucket website config with:\n{}".format(str(e)))
+        logger.error("Check that you have privileges.")
+        return 1
+    bw.load()

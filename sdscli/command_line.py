@@ -276,6 +276,10 @@ def main():
                                   choices=['aws', 'azure', 'gcp'])
     parser_cloud_storage_subparsers = parser_cloud_storage.add_subparsers(dest='subparser2', help='SDS cloud storage management functions')
     parser_cloud_storage_ls = parser_cloud_storage_subparsers.add_parser('ls', help="list buckets")
+    parser_cloud_storage_ship_style = parser_cloud_storage_subparsers.add_parser('ship_style', help="ship browse style to bucket")
+    parser_cloud_storage_ship_style.add_argument('--bucket', '-b', default=None, help="bucket name")
+    parser_cloud_storage_ship_style.add_argument('--encrypt', '-e', action='store_true',
+                             help="encrypt")
     parser_cloud.set_defaults(func=cloud)
 
     # parser for jobs

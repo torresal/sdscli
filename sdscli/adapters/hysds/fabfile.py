@@ -800,3 +800,26 @@ def send_project_config(project):
                     use_jinja=True, context=ctx, template_dir=get_user_files_path())
     upload_template('supervisord.conf.tmpl', '~/verdi/etc/supervisord.conf.tmpl',
                     use_jinja=True, context=ctx, template_dir=get_user_files_path())
+
+
+##########################
+# ship s3-bucket style
+##########################
+
+def ship_style(bucket=None, encrypt=False):
+    ctx = get_context()
+    if bucket is None: bucket = ctx['DATASET_BUCKET']
+    repo_dir = os.path.join(ops_dir, 'mozart/ops/s3-bucket-listing')
+    index_file = os.path.join(repo_dir, 'tmp_index.html')
+    list_js = os.path.join(repo_dir, 'list.js')
+    index_style = os.path.join(repo_dir, 'index-style')
+    upload_template('s3-bucket-listing.html.tmpl', index_file, use_jinja=True, 
+                    context=ctx, template_dir=get_user_files_path())
+    if encrypt is False:
+        run('aws s3 cp %s s3://%s/index.html' % (index_file, bucket))
+        run('aws s3 cp %s s3://%s/' % (list_js, bucket))
+        run('aws s3 sync %s s3://%s/index-style' % (index_style, bucket))
+    else:
+        run('aws s3 cp --sse %s s3://%s/index.html' % (index_file, bucket))
+        run('aws s3 cp --sse %s s3://%s/' % (list_js, bucket))
+        run('aws s3 sync --sse %s s3://%s/index-style' % (index_style, bucket))
