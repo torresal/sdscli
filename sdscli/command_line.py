@@ -280,6 +280,13 @@ def main():
     parser_cloud_storage_ship_style.add_argument('--bucket', '-b', default=None, help="bucket name")
     parser_cloud_storage_ship_style.add_argument('--encrypt', '-e', action='store_true',
                              help="encrypt")
+    parser_cloud_storage_create_staging_area = parser_cloud_storage_subparsers.add_parser('create_staging_area',
+                                                                                          help="provision staging area under bucket")
+    parser_cloud_storage_create_staging_area.add_argument('--bucket', '-b', default=None, help="bucket name")
+    parser_cloud_storage_create_staging_area.add_argument('--prefix', '-p', default="staging_area/", 
+                                                          help="staging area prefix")
+    parser_cloud_storage_create_staging_area.add_argument('--suffix', '-s', default=".met.json", 
+                                                          help="staging area signal file suffix")
     parser_cloud.set_defaults(func=cloud)
 
     # parser for jobs
