@@ -47,7 +47,7 @@ def ship_style(args, conf):
     func = get_func('sdscli.adapters.{}.fabfile'.format(args.type), args.subparser2)
 
     # execute
-    #execute(func, bucket_name, args.encrypt, roles=['mozart']) 
+    execute(func, bucket_name, args.encrypt, roles=['mozart']) 
 
     # turn on website hosting and set index and error docs
     bw_args = {
