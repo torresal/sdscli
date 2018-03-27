@@ -381,6 +381,11 @@ def ensure_venv(hysds_dir):
             mkdir('%s/etc' % hysds_dir, context['OPS_USER'], context['OPS_USER'])
             mkdir('%s/log' % hysds_dir, context['OPS_USER'], context['OPS_USER'])
             mkdir('%s/run' % hysds_dir, context['OPS_USER'], context['OPS_USER'])
+    bash_prof = os.path.expanduser("~/.bash_profile")
+    with open(bash_prof) as f:
+        bash_prof_lines = f.read()
+    if not re.search(r'^source \$HOME/{}/bin/activate'.format(hysds_dir), bash_prof_lines, re.M):
+        run("echo 'source $HOME/{}/bin/activate' >> ~/.bash_profile".format(hysds_dir))
 
 
 def install_pkg_es_templates():
