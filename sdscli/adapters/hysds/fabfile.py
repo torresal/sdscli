@@ -823,3 +823,13 @@ def ship_style(bucket=None, encrypt=False):
         run('aws s3 cp --sse %s s3://%s/index.html' % (index_file, bucket))
         run('aws s3 cp --sse %s s3://%s/' % (list_js, bucket))
         run('aws s3 sync --sse %s s3://%s/index-style' % (index_style, bucket))
+
+
+##########################
+# create cloud function zip
+##########################
+
+def create_zip(zip_dir, zip_file):
+    if exists(zip_file): run('rm -rf %s' % zip_file)
+    with cd(zip_dir):
+        run('zip -r -9 {} *'.format(zip_file))

@@ -167,3 +167,19 @@ def create_topic(c=None, **kargs):
 
     if c is None: c = boto3.client('sns')
     return c.create_topic(**kargs)
+
+
+@cloud_config_check
+def get_roles(c=None, **kargs):
+    """Get list of roles."""
+
+    if c is None: c = boto3.client('iam')
+    roles = []
+    resp = c.list_roles()
+    roles.extend(resp.get('Roles', []))
+    while True:
+        if resp['IsTruncated']:
+            resp = c.list_roles(Marker=resp['Marker'])
+            roles.extend(resp.get('Roles', []))   
+        else: break
+    return roles

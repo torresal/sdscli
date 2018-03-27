@@ -1,11 +1,11 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-import os, re, json, boto3, hashlib
+import os, re, json, boto3, hashlib, base64
 from pprint import pformat
 from collections import OrderedDict
 from operator import itemgetter
-from fabric.api import execute
+from fabric.api import execute, hide
 
 from prompt_toolkit.shortcuts import prompt, print_tokens
 from prompt_toolkit.styles import style_from_dict
@@ -20,6 +20,9 @@ from sdscli.prompt_utils import (YesNoValidator, SelectionValidator,
 MultipleSelectionValidator, Ec2InstanceTypeValidator, PriceValidator, highlight,
 print_component_header)
 from .utils import *
+from .asg import prompt_secgroup
+
+from osaka.main import put
 
 
 prompt_style = style_from_dict({
@@ -34,6 +37,23 @@ def ls(args, conf):
     """List all buckets."""
 
     for bucket in get_buckets(): print(bucket['Name'])
+
+
+def prompt_role(roles):
+    """Prompt for role to use."""
+
+    names = roles.keys()
+    pt = [(Token, "Current roles are:\n\n")]
+    for i, x in enumerate(names):
+        pt.append((Token.Param, "{}".format(i)))
+        pt.append((Token, ". {} - {} ({})\n".format(x, roles[x]['Arn'], roles[x]['CreateDate'])))
+    pt.append((Token, "\nSelect role to use for lambda execution: "))
+    while True:
+        sel = int(prompt(get_prompt_tokens=lambda x: pt, style=prompt_style,
+                         validator=SelectionValidator()).strip())
+        try: return names[sel]
+        except IndexError:
+            print("Invalid selection: {}".format(sel))
 
 
 @cloud_config_check
@@ -118,7 +138,6 @@ def create_staging_area(args, conf):
                                     AttributeValue=json.dumps(pol))
     sns_client.set_topic_attributes(TopicArn=topic_arn, AttributeName="DisplayName",
                                     AttributeValue=topic_name)
-    
 
     # create notification event on bucket staging area
     notification_name = "data-staged-{}".format(topic_name)
@@ -151,3 +170,98 @@ def create_staging_area(args, conf):
         }
     }
     configure_bucket_notification(bucket_name, c=s3_res, **bn_args)
+
+    # create lambda zip file and upload to code bucket
+    zip_file = "/tmp/data-staged.zip"
+    func = get_func('sdscli.adapters.{}.fabfile'.format(args.type), 'create_zip')
+    if args.debug:
+        execute(func, "mozart/ops/hysds-cloud-functions/aws/data-staged", 
+                zip_file, roles=['mozart'])
+    else:
+        with hide('everything'):
+            execute(func, "mozart/ops/hysds-cloud-functions/aws/data-staged", 
+                    zip_file, roles=['mozart'])
+    #code_bucket = "s3://{}/{}".format(conf.get('S3_ENDPOINT'), conf.get('CODE_BUCKET'))
+    #zip_url = os.path.join(code_bucket, 'data-staged.zip')
+    #put(zip_file, zip_url)
+
+    # prompt for security groups
+    cur_sgs = { i['GroupId']: i for i in get_sgs() }
+    logger.debug("cur_sgs: {}".format(pformat(cur_sgs)))
+    sgs, vpc_id = prompt_secgroup(cur_sgs)
+    logger.debug("security groups: {}".format(sgs))
+    logger.debug("VPC ID: {}".format(vpc_id))
+
+    # get current AZs
+    cur_azs = { i['ZoneName']: i for i in get_azs() }
+    logger.debug("cur_azs: {}".format(pformat(cur_azs)))
+
+    # get subnet IDs and corresponding AZs for VPC
+    subnets = []
+    azs = set()
+    for sn in get_subnets_by_vpc(vpc_id):
+        sn_id = sn.subnet_id
+        sn_az = sn.availability_zone
+        if cur_azs[sn_az]['State'] == 'available':
+            subnets.append(sn_id)
+            azs.add(sn_az)
+    azs = list(azs)
+    logger.debug("subnets: {}".format(pformat(subnets)))
+    logger.debug("azs: {}".format(pformat(azs)))
+
+    # prompt for role
+    roles = get_roles()
+    logger.debug("Found {} roles.".format(len(roles)))
+    cur_roles = OrderedDict([(i['Arn'], i) for i in sorted(roles, 
+                            key=itemgetter('CreateDate'))])
+    role = prompt_role(cur_roles)
+    logger.debug("Selected role: {}".format(role))
+
+    # prompt for job type, release, and queue
+    job_type = prompt(get_prompt_tokens=lambda x:
+                      [(Token, "Enter job type to submit on data staged event: ")],
+                      style=prompt_style).strip()
+    logger.debug("job type: {}".format(job_type))
+    job_release = prompt(get_prompt_tokens=lambda x:
+                         [(Token, "Enter release version for {}: ".format(job_type))],
+                         style=prompt_style).strip()
+    logger.debug("job release: {}".format(job_release))
+    job_queue = prompt(get_prompt_tokens=lambda x:
+                       [(Token, "Enter queue name to submit {}-{} jobs to: ".format(job_type, job_release))],
+                       style=prompt_style).strip()
+    logger.debug("job queue: {}".format(job_queue))
+
+    # create lambda
+    lambda_client = boto3.client('lambda')
+    cf_args = {
+        "FunctionName": "submit_data_staged_ingest",
+        "Runtime": "python2.7",
+        "Role": role,
+        "Handler": "lambda_function.lambda_handler",
+        "Code": {
+            "ZipFile": open(zip_file, 'rb').read(),
+            #"S3Bucket": conf.get('CODE_BUCKET'),
+            #"S3Key": os.path.basename(zip_url)
+        },
+        "Description": "Lambda function to submit ingest job for data staged to S3 staging area.",
+        "VpcConfig": {
+            "SubnetIds": subnets,
+            "SecurityGroupIds": sgs,
+        },
+        "Environment": {
+            "Variables": {
+                "DATASET_S3_ENDPOINT": conf.get('DATASET_S3_ENDPOINT'),
+                "JOB_TYPE": job_type,
+                "JOB_RELEASE": job_release,
+                "JOB_QUEUE": job_queue,
+                "MOZART_URL": "http://{}:8888".format(conf.get('MOZART_PVT_IP'))
+            }
+        }
+    }
+    lambda_resp = lambda_client.create_function(**cf_args)
+    logger.debug("lambda_resp: {}".format(lambda_resp))
+
+    # subscribe lambda endpoint to sns
+    sns_resp = sns_client.subscribe(TopicArn=topic_arn, Protocol="lambda", 
+                                    Endpoint=lambda_resp['FunctionArn'])
+    logger.debug("sns_resp: {}".format(sns_resp))
