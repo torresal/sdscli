@@ -232,9 +232,10 @@ def create_staging_area(args, conf):
     logger.debug("job queue: {}".format(job_queue))
 
     # create lambda
+    function_name = "submit_data_staged_ingest"
     lambda_client = boto3.client('lambda')
     cf_args = {
-        "FunctionName": "submit_data_staged_ingest",
+        "FunctionName": function_name,
         "Runtime": "python2.7",
         "Role": role,
         "Handler": "lambda_function.lambda_handler",
@@ -260,6 +261,11 @@ def create_staging_area(args, conf):
     }
     lambda_resp = lambda_client.create_function(**cf_args)
     logger.debug("lambda_resp: {}".format(lambda_resp))
+
+    # add permission for sns to invoke lambda function
+    lambda_client.add_permission(Action="lambda:InvokeFunction", FunctionName=function_name,
+                                 Principal="sns.amazonaws.com", StatementId="ID-1",
+                                 SourceArn=topic_arn)
 
     # subscribe lambda endpoint to sns
     sns_resp = sns_client.subscribe(TopicArn=topic_arn, Protocol="lambda", 
