@@ -381,6 +381,11 @@ def ensure_venv(hysds_dir):
             mkdir('%s/etc' % hysds_dir, context['OPS_USER'], context['OPS_USER'])
             mkdir('%s/log' % hysds_dir, context['OPS_USER'], context['OPS_USER'])
             mkdir('%s/run' % hysds_dir, context['OPS_USER'], context['OPS_USER'])
+    bash_prof = os.path.expanduser("~/.bash_profile")
+    with open(bash_prof) as f:
+        bash_prof_lines = f.read()
+    if not re.search(r'^source \$HOME/{}/bin/activate'.format(hysds_dir), bash_prof_lines, re.M):
+        run("echo 'source $HOME/{}/bin/activate' >> ~/.bash_profile".format(hysds_dir))
 
 
 def install_pkg_es_templates():
@@ -800,3 +805,36 @@ def send_project_config(project):
                     use_jinja=True, context=ctx, template_dir=get_user_files_path())
     upload_template('supervisord.conf.tmpl', '~/verdi/etc/supervisord.conf.tmpl',
                     use_jinja=True, context=ctx, template_dir=get_user_files_path())
+
+
+##########################
+# ship s3-bucket style
+##########################
+
+def ship_style(bucket=None, encrypt=False):
+    ctx = get_context()
+    if bucket is None: bucket = ctx['DATASET_BUCKET']
+    repo_dir = os.path.join(ops_dir, 'mozart/ops/s3-bucket-listing')
+    index_file = os.path.join(repo_dir, 'tmp_index.html')
+    list_js = os.path.join(repo_dir, 'list.js')
+    index_style = os.path.join(repo_dir, 'index-style')
+    upload_template('s3-bucket-listing.html.tmpl', index_file, use_jinja=True, 
+                    context=ctx, template_dir=get_user_files_path())
+    if encrypt is False:
+        run('aws s3 cp %s s3://%s/index.html' % (index_file, bucket))
+        run('aws s3 cp %s s3://%s/' % (list_js, bucket))
+        run('aws s3 sync %s s3://%s/index-style' % (index_style, bucket))
+    else:
+        run('aws s3 cp --sse %s s3://%s/index.html' % (index_file, bucket))
+        run('aws s3 cp --sse %s s3://%s/' % (list_js, bucket))
+        run('aws s3 sync --sse %s s3://%s/index-style' % (index_style, bucket))
+
+
+##########################
+# create cloud function zip
+##########################
+
+def create_zip(zip_dir, zip_file):
+    if exists(zip_file): run('rm -rf %s' % zip_file)
+    with cd(zip_dir):
+        run('zip -r -9 {} *'.format(zip_file))

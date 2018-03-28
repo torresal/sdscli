@@ -45,10 +45,27 @@ def asg(args):
     # get func
     try:
         func = get_func('sdscli.cloud.{}.{}'.format(args.cloud, args.subparser), args.subparser2)
-    except ImportError:
+    except (ImportError, AttributeError):
         logger.error('Not implemented yet. Mahalo for trying. ;)')
         return 1
-    except AttributeError:
+
+    # run
+    return func(args, conf)
+
+
+def storage(args):
+    """Cloud storage management functions."""
+
+    # print args
+    logger.debug("In storage(): {}".format(args))
+
+    # get user's SDS conf settings
+    conf = SettingsConf()
+
+    # get func
+    try:
+        func = get_func('sdscli.cloud.{}.{}'.format(args.cloud, args.subparser), args.subparser2)
+    except (ImportError, AttributeError):
         logger.error('Not implemented yet. Mahalo for trying. ;)')
         return 1
 

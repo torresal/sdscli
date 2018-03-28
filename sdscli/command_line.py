@@ -271,6 +271,22 @@ def main():
     parser_cloud_asg_subparsers = parser_cloud_asg.add_subparsers(dest='subparser2', help='SDS cloud Autoscaling management functions')
     parser_cloud_asg_ls = parser_cloud_asg_subparsers.add_parser('ls', help="list Autoscaling groups")
     parser_cloud_asg_create = parser_cloud_asg_subparsers.add_parser('create', help="create Autoscaling group")
+    parser_cloud_storage = parser_cloud_subparsers.add_parser('storage', help="SDS cloud storage management")
+    parser_cloud_storage.add_argument('--cloud', '-c', default='aws', const='aws', nargs='?',
+                                  choices=['aws', 'azure', 'gcp'])
+    parser_cloud_storage_subparsers = parser_cloud_storage.add_subparsers(dest='subparser2', help='SDS cloud storage management functions')
+    parser_cloud_storage_ls = parser_cloud_storage_subparsers.add_parser('ls', help="list buckets")
+    parser_cloud_storage_ship_style = parser_cloud_storage_subparsers.add_parser('ship_style', help="ship browse style to bucket")
+    parser_cloud_storage_ship_style.add_argument('--bucket', '-b', default=None, help="bucket name")
+    parser_cloud_storage_ship_style.add_argument('--encrypt', '-e', action='store_true',
+                             help="encrypt")
+    parser_cloud_storage_create_staging_area = parser_cloud_storage_subparsers.add_parser('create_staging_area',
+                                                                                          help="provision staging area under bucket")
+    parser_cloud_storage_create_staging_area.add_argument('--bucket', '-b', default=None, help="bucket name")
+    parser_cloud_storage_create_staging_area.add_argument('--prefix', '-p', default="staging_area/", 
+                                                          help="staging area prefix")
+    parser_cloud_storage_create_staging_area.add_argument('--suffix', '-s', default=".met.json", 
+                                                          help="staging area signal file suffix")
     parser_cloud.set_defaults(func=cloud)
 
     # parser for jobs
