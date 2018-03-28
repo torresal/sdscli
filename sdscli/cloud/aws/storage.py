@@ -188,7 +188,8 @@ def create_staging_area(args, conf):
     # prompt for security groups
     cur_sgs = { i['GroupId']: i for i in get_sgs() }
     logger.debug("cur_sgs: {}".format(pformat(cur_sgs)))
-    sgs, vpc_id = prompt_secgroup(cur_sgs)
+    desc = "\nSelect security groups lambda will use (space between each selected): "
+    sgs, vpc_id = prompt_secgroup(cur_sgs, desc)
     logger.debug("security groups: {}".format(sgs))
     logger.debug("VPC ID: {}".format(vpc_id))
 
@@ -255,7 +256,7 @@ def create_staging_area(args, conf):
                 "JOB_TYPE": job_type,
                 "JOB_RELEASE": job_release,
                 "JOB_QUEUE": job_queue,
-                "MOZART_URL": "http://{}:8888".format(conf.get('MOZART_PVT_IP'))
+                "MOZART_URL": "https://{}/mozart".format(conf.get('MOZART_PVT_IP'))
             }
         }
     }

@@ -68,15 +68,17 @@ def prompt_keypair(keypairs):
             print("Invalid selection: {}".format(sel))
 
 
-def prompt_secgroup(sgs):
+def prompt_secgroup(sgs, desc=None):
     """Prompt for security groups to use."""
 
+    if desc is None:
+        desc = "\nSelect security groups to use for launch configurations (space between each selected): "
     ids = sgs.keys()
     pt = [(Token, "Current security groups are:\n\n")]
     for i, x in enumerate(ids):
         pt.append((Token.Param, "{}".format(i)))
         pt.append((Token, ". {} - {} - {}\n".format(sgs[x]['VpcId'], sgs[x]['GroupName'], x)))
-    pt.append((Token, "\nSelect security groups to use for launch configurations (space between each selected): "))
+    pt.append((Token, desc))
     while True:
         sels = map(int, [i.strip() for i in prompt(get_prompt_tokens=lambda x: pt, style=prompt_style,
                                                    validator=MultipleSelectionValidator()).split()])
