@@ -233,7 +233,8 @@ def create_staging_area(args, conf):
     logger.debug("job queue: {}".format(job_queue))
 
     # create lambda
-    function_name = "submit_data_staged_ingest"
+    function_name = "{}-{}-submit_data_staged_ingest".format(conf.get('VENUE'),
+                                                             args.prefix.replace('/', ''))
     lambda_client = boto3.client('lambda')
     cf_args = {
         "FunctionName": function_name,
