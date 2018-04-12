@@ -412,8 +412,9 @@ def grqd_clean_start():
 
 
 def grqd_stop():
-    with prefix('source sciflo/bin/activate'):
-        run('supervisorctl shutdown')
+    if exists('sciflo/run/supervisor.sock'):
+        with prefix('source sciflo/bin/activate'):
+            run('supervisorctl shutdown')
 
 
 def install_es_template():
@@ -442,8 +443,9 @@ def mozartd_clean_start():
 
 
 def mozartd_stop():
-    with prefix('source mozart/bin/activate'):
-        run('supervisorctl shutdown')
+    if exists('mozart/run/supervisor.sock'):
+        with prefix('source mozart/bin/activate'):
+            run('supervisorctl shutdown')
 
 
 def redis_flush():
@@ -495,8 +497,9 @@ def metricsd_clean_start():
 
 
 def metricsd_stop():
-    with prefix('source metrics/bin/activate'):
-        run('supervisorctl shutdown')
+    if exists('metrics/run/supervisor.sock'):
+        with prefix('source metrics/bin/activate'):
+            run('supervisorctl shutdown')
 
 
 ##########################
@@ -528,8 +531,9 @@ def verdid_clean_start():
 
 
 def verdid_stop():
-    with prefix('source verdi/bin/activate'):
-        run('supervisorctl shutdown')
+    if exists('verdi/run/supervisor.sock'):
+        with prefix('source verdi/bin/activate'):
+            run('supervisorctl shutdown')
 
 
 def supervisorctl_up():
