@@ -8,7 +8,7 @@ from __future__ import print_function
 import os, re, yaml, json, requests
 from copy import deepcopy
 from fabric.api import run, cd, put, sudo, prefix, env, settings
-from fabric.contrib.files import upload_template, exists
+from fabric.contrib.files import upload_template, exists, append
 from fabric.contrib.project import rsync_project
 
 from sdscli.log_utils import logger
@@ -381,11 +381,7 @@ def ensure_venv(hysds_dir):
             mkdir('%s/etc' % hysds_dir, context['OPS_USER'], context['OPS_USER'])
             mkdir('%s/log' % hysds_dir, context['OPS_USER'], context['OPS_USER'])
             mkdir('%s/run' % hysds_dir, context['OPS_USER'], context['OPS_USER'])
-    bash_prof = os.path.expanduser("~/.bash_profile")
-    with open(bash_prof) as f:
-        bash_prof_lines = f.read()
-    if not re.search(r'^source \$HOME/{}/bin/activate'.format(hysds_dir), bash_prof_lines, re.M):
-        run("echo 'source $HOME/{}/bin/activate' >> ~/.bash_profile".format(hysds_dir))
+    append('.bash_profile', "source $HOME/{}/bin/activate".format(hysds_dir), escape=True)
 
 
 def install_pkg_es_templates():
