@@ -382,6 +382,7 @@ def ensure_venv(hysds_dir):
             mkdir('%s/log' % hysds_dir, context['OPS_USER'], context['OPS_USER'])
             mkdir('%s/run' % hysds_dir, context['OPS_USER'], context['OPS_USER'])
     append('.bash_profile', "source $HOME/{}/bin/activate".format(hysds_dir), escape=True)
+    append('.bash_profile', "export FACTER_ipaddress=$(ifconfig $(route | awk '/default/{print $NF}') | grep 'inet ' | sed 's/addr://' | awk '{print $2}')", escape=True)
 
 
 def install_pkg_es_templates():
