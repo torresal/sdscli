@@ -90,6 +90,18 @@ def export(args):
         }
     })]
     logger.debug("job_specs: {}".format(json.dumps(job_specs, indent=2)))
+    
+    # backwards-compatible query
+    if len(job_specs) == 0:
+        logger.debug("Got no job_specs. Checking deprecated mappings:")
+        job_specs = [i['_source'] for i in run_query(mozart_es_url, "job_specs", {
+            "query": {
+                "query_string": {
+                    "query": "container:\"{}\"".format(cont_id)
+                }
+            }
+        })]
+        logger.debug("job_specs: {}".format(json.dumps(job_specs, indent=2)))
 
     # pull hysds_ios for each job_spec and download any dependency images
     hysds_ios = []
@@ -113,15 +125,39 @@ def export(args):
             }
         })]
         logger.debug("Found {} hysds_ios on mozart for {}.".format(len(mozart_hysds_ios), job_spec['id']))
+
+        # backwards-compatible query
+        if len(mozart_hysds_ios) == 0:
+            logger.debug("Got no hysds_ios from mozart. Checking deprecated mappings:")
+            mozart_hysds_ios = [i['_source'] for i in run_query(mozart_es_url, "hysds_ios", {
+                "query": {
+                    "query_string": {
+                        "query": "job-specification:\"{}\"".format(job_spec['id'])
+                    }
+                }
+            })]
+            logger.debug("Found {} hysds_ios on mozart for {}.".format(len(mozart_hysds_ios), job_spec['id']))
         hysds_ios.extend(mozart_hysds_ios)
         
-        # collect hysds_ios from mozart
+        # collect hysds_ios from grq
         grq_hysds_ios = [i['_source'] for i in run_query(grq_es_url, "hysds_ios", {
             "query": {
                 "term": { "job-specification.raw": job_spec['id'] }
             }
         })]
         logger.debug("Found {} hysds_ios on grq for {}.".format(len(grq_hysds_ios), job_spec['id']))
+
+        # backwards-compatible query
+        if len(mozart_hysds_ios) == 0:
+            logger.debug("Got no hysds_ios from grq. Checking deprecated mappings:")
+            grq_hysds_ios = [i['_source'] for i in run_query(grq_es_url, "hysds_ios", {
+                "query": {
+                    "query_string": {
+                        "query": "job-specification:\"{}\"".format(job_spec['id'])
+                    }
+                }
+            })]
+            logger.debug("Found {} hysds_ios on grq for {}.".format(len(grq_hysds_ios), job_spec['id']))
         hysds_ios.extend(grq_hysds_ios)
     logger.debug("Found {} hysds_ios total.".format(len(hysds_ios)))
 
