@@ -161,10 +161,11 @@ def export(args):
         hysds_ios.extend(grq_hysds_ios)
     logger.debug("Found {} hysds_ios total.".format(len(hysds_ios)))
 
-    # clean out allowed accounts
-    for hysds_io in hysds_ios:
-        if 'allowed_accounts' in hysds_io:
-            del hysds_io['allowed_accounts']
+    # export allowed accounts
+    if not args.accounts:
+        for hysds_io in hysds_ios:
+            if 'allowed_accounts' in hysds_io:
+                del hysds_io['allowed_accounts']
 
     # dump manifest JSON
     manifest = {

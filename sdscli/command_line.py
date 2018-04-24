@@ -264,6 +264,7 @@ def main():
     parser_pkg_export.add_argument('id', help='SDS package id to export')
     parser_pkg_export.add_argument('--outdir', '-o', default=".",
                                    help="root output directory of SDS package")
+    parser_pkg_export.add_argument('--accounts', '-a', action='store_true', help="save allowed accounts")
     parser_pkg_import = parser_pkg_subparsers.add_parser('import', help="import SDS package")
     parser_pkg_import.add_argument('file', help='SDS package to import')
     parser_pkg_rm = parser_pkg_subparsers.add_parser('rm', help="remove SDS package")
