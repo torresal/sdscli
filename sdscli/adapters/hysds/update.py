@@ -459,6 +459,7 @@ def update_verdi(conf, comp='verdi'):
         set_bar_desc(bar, 'Syncing packages')
         execute(fab.rm_rf, '~/verdi/ops/*', roles=[comp])
         execute(fab.rsync_code, 'verdi', roles=[comp])
+        execute(fab.set_spyddder_settings, roles=[comp])
         bar.update()
 
         # update reqs
