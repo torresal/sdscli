@@ -577,10 +577,10 @@ def ship_verdi(conf, encrypt=False):
 
     comp = 'verdi'
     venue = conf.get('VENUE')
-    projects = [i.strip() for i in conf.get('PROJECTS').split()]
+    queue_prefixes = [i.strip() for i in conf.get('QUEUE_PREFIXES').split()]
 
     # progress bar
-    with tqdm(total=len(projects)+2) as bar:
+    with tqdm(total=len(queue_prefixes)+2) as bar:
 
         # ensure venv
         set_bar_desc(bar, 'Ensuring HySDS venv')
@@ -593,53 +593,53 @@ def ship_verdi(conf, encrypt=False):
         execute(fab.kill_hung, roles=[comp])
         bar.update()
 
-        # iterate over projects
-        for project in projects:
+        # iterate over queue_prefixes
+        for queue_prefix in queue_prefixes:
 
-            set_bar_desc(bar, 'Shipping {} project'.format(project))
+            set_bar_desc(bar, 'Shipping {} queue_prefix'.format(queue_prefix))
 
             # progress bar
-            with tqdm(total=5) as proj_bar:
+            with tqdm(total=5) as queue_prefix_bar:
 
-                # send project-specific install.sh script and configs
-                set_bar_desc(proj_bar, 'Sending project-specific config')
+                # send queue_prefix-specific install.sh script and configs
+                set_bar_desc(queue_prefix_bar, 'Sending queue_prefix-specific config')
                 execute(fab.rm_rf, '~/verdi/ops/install.sh', roles=[comp])
                 execute(fab.rm_rf, '~/verdi/etc/datasets.json', roles=[comp])
                 execute(fab.rm_rf, '~/verdi/etc/supervisord.conf', roles=[comp])
                 execute(fab.rm_rf, '~/verdi/etc/supervisord.conf.tmpl', roles=[comp])
-                execute(fab.send_project_config, project, roles=[comp])
+                execute(fab.send_queue_prefix_config, queue_prefix, roles=[comp])
                 execute(fab.chmod, '755', '~/verdi/ops/install.sh', roles=[comp])
                 execute(fab.chmod, '644', '~/verdi/etc/datasets.json', roles=[comp])
-                proj_bar.update()
+                queue_prefix_bar.update()
 
                 # copy config
-                set_bar_desc(proj_bar, 'Copying config')
+                set_bar_desc(queue_prefix_bar, 'Copying config')
                 execute(fab.rm_rf, '~/verdi/ops/etc', roles=[comp])
                 execute(fab.cp_rp, '~/verdi/etc', '~/verdi/ops/', roles=[comp])
-                proj_bar.update()
+                queue_prefix_bar.update()
 
                 # copy creds
-                set_bar_desc(proj_bar, 'Copying creds')
+                set_bar_desc(queue_prefix_bar, 'Copying creds')
                 execute(fab.rm_rf, '~/verdi/ops/creds', roles=[comp])
                 execute(fab.mkdir, '~/verdi/ops/creds', 'ops', 'ops', roles=[comp])
                 execute(fab.cp_rp_exists, '~/.netrc', '~/verdi/ops/creds/', roles=[comp])
                 execute(fab.cp_rp_exists, '~/.boto', '~/verdi/ops/creds/', roles=[comp])
                 execute(fab.cp_rp_exists, '~/.s3cfg', '~/verdi/ops/creds/', roles=[comp])
                 execute(fab.cp_rp_exists, '~/.aws', '~/verdi/ops/creds/', roles=[comp])
-                proj_bar.update()
+                queue_prefix_bar.update()
 
                 # send work directory stylesheets
                 style_tar = os.path.join(get_user_files_path(), 'beefed-autoindex-open_in_new_win.tbz2')
-                set_bar_desc(proj_bar, 'Sending work dir stylesheets')
+                set_bar_desc(queue_prefix_bar, 'Sending work dir stylesheets')
                 execute(fab.rm_rf, '~/verdi/ops/beefed-autoindex-open_in_new_win.tbz2', roles=[comp])
                 execute(fab.copy, style_tar, '~/verdi/ops/beefed-autoindex-open_in_new_win.tbz2', roles=[comp])
-                proj_bar.update()
+                queue_prefix_bar.update()
 
                 # create venue bundle
-                set_bar_desc(proj_bar, 'Creating/shipping bundle')
-                execute(fab.rm_rf, '~/{}-{}.tbz2'.format(project, venue), roles=[comp])
-                execute(fab.ship_code, '~/verdi/ops', '~/{}-{}.tbz2'.format(project, venue), encrypt, roles=[comp])
-                proj_bar.update()
+                set_bar_desc(queue_prefix_bar, 'Creating/shipping bundle')
+                execute(fab.rm_rf, '~/{}-{}.tbz2'.format(queue_prefix, venue), roles=[comp])
+                execute(fab.ship_code, '~/verdi/ops', '~/{}-{}.tbz2'.format(queue_prefix, venue), encrypt, roles=[comp])
+                queue_prefix_bar.update()
             bar.update()
         set_bar_desc(bar, 'Finished shipping')
         print("")

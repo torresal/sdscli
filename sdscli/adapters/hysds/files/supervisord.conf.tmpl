@@ -60,13 +60,13 @@ stdout_logfile_maxbytes=100MB
 stdout_logfile_backups=10
 startsecs=10
 
-[program:{{ project }}-job_worker-small]
+[program:{{ queue_prefix }}-job_worker-small]
 directory=/home/ops/verdi/ops/hysds
 environment=HYSDS_ROOT_WORK_DIR="/data/work",
             HYSDS_DATASETS_CFG="/home/ops/verdi/etc/datasets.json",
             FACTER_ipaddress_eth0="__IPADDRESS_ETH0__",
             FACTER_fqdn="__FQDN__"
-command=celery worker --app=hysds --concurrency=1 --loglevel=INFO -Q {{ project }}-job_worker-small -n %(program_name)s.__FQDN__ -O fair --without-mingle --without-gossip --heartbeat-interval=60
+command=celery worker --app=hysds --concurrency=1 --loglevel=INFO -Q {{ queue_prefix }}-job_worker-small -n %(program_name)s.__FQDN__ -O fair --without-mingle --without-gossip --heartbeat-interval=60
 process_name=%(program_name)s
 priority=1
 numprocs=1
@@ -77,13 +77,13 @@ stdout_logfile_maxbytes=100MB
 stdout_logfile_backups=10
 startsecs=10
 
-[program:{{ project }}-job_worker-large]
+[program:{{ queue_prefix }}-job_worker-large]
 directory=/home/ops/verdi/ops/hysds
 environment=HYSDS_ROOT_WORK_DIR="/data/work",
             HYSDS_DATASETS_CFG="/home/ops/verdi/etc/datasets.json",
             FACTER_ipaddress_eth0="__IPADDRESS_ETH0__",
             FACTER_fqdn="__FQDN__"
-command=celery worker --app=hysds --concurrency=1 --loglevel=INFO -Q {{ project }}-job_worker-large -n %(program_name)s.__FQDN__ -O fair --without-mingle --without-gossip --heartbeat-interval=60
+command=celery worker --app=hysds --concurrency=1 --loglevel=INFO -Q {{ queue_prefix }}-job_worker-large -n %(program_name)s.__FQDN__ -O fair --without-mingle --without-gossip --heartbeat-interval=60
 process_name=%(program_name)s
 priority=1
 numprocs=1

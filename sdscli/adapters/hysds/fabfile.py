@@ -797,9 +797,9 @@ def send_awscreds():
 # ship verdi code bundle
 ##########################
 
-def send_project_config(project):
+def send_queue_prefix_config(queue_prefix):
     ctx = get_context()
-    ctx.update({'project': project})
+    ctx.update({'queue_prefix': queue_prefix})
     upload_template('install.sh', '~/verdi/ops/install.sh', use_jinja=True, context=ctx,
                     template_dir=get_user_files_path())
     upload_template('datasets.json.tmpl.asg', '~/verdi/etc/datasets.json',

@@ -127,7 +127,7 @@ VERDI_TAG: {VERDI_TAG}
 VERDI_UID: {VERDI_UID}
 VERDI_GID: {VERDI_GID}
 AUTOSCALE_GROUP: {AUTOSCALE_GROUP}
-PROJECTS: {PROJECTS}
+QUEUE_PREFIXES: {QUEUE_PREFIXES}
 VENUE: {VENUE}
 
 # git oauth token
@@ -266,7 +266,7 @@ CFG_DEFAULTS = {
         [ "VERDI_UID", os.getuid()],
         [ "VERDI_GID", os.getgid()],
         [ "AUTOSCALE_GROUP", ""],
-        [ "PROJECTS", "dumby dumby_urgent"],
+        [ "QUEUE_PREFIXES", "dumby dumby_urgent"],
         [ "VENUE", "ops"],
     ]
 }

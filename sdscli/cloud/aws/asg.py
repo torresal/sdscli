@@ -166,9 +166,9 @@ def create(args, conf):
     logger.debug("azs: {}".format(pformat(azs)))
 
     # check asgs that need to be configured
-    for project in [i.strip() for i in conf.get('PROJECTS').split()]:
+    for queue_prefix in [i.strip() for i in conf.get('QUEUE_PREFIXES').split()]:
         asg = "{}-{}-{}".format(conf.get('AUTOSCALE_GROUP'),
-                                project, conf.get('VENUE'))
+                                queue_prefix, conf.get('VENUE'))
         if asg in cur_asgs:
             print("ASG {} already exists. Skipping.".format(asg))
             continue
@@ -177,7 +177,7 @@ def create(args, conf):
 
         # get user data
         user_data = "BUNDLE_URL=s3://{}/{}-{}.tbz2".format(conf.get('CODE_BUCKET'),
-                                                           project, conf.get('VENUE'))
+                                                           queue_prefix, conf.get('VENUE'))
 
         # prompt instance type
         instance_type = prompt(get_prompt_tokens=lambda x: [(Token, "Refer to https://www.ec2instances.info/ "),
@@ -250,8 +250,8 @@ def create(args, conf):
                     'PropagateAtLaunch': True,
                 },
                 {
-                    'Key': 'Project',
-                    'Value': project,
+                    'Key': 'QueuePrefix',
+                    'Value': queue_prefix,
                     'PropagateAtLaunch': True,
                 },
             ],
@@ -263,7 +263,7 @@ def create(args, conf):
 
         # add target tracking scaling policies
         for size in ('large', 'small'):
-            queue = "{}-job_worker-{}".format(project, size) 
+            queue = "{}-job_worker-{}".format(queue_prefix, size) 
             policy_name = "{}-{}-target-tracking".format(asg, size)
             metric_name = "JobsWaitingPerInstance-{}-{}".format(queue, asg)
             ttsp_args = {
