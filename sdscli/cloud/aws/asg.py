@@ -166,9 +166,9 @@ def create(args, conf):
     logger.debug("azs: {}".format(pformat(azs)))
 
     # check asgs that need to be configured
-    for queue_prefix in [i.strip() for i in conf.get('QUEUE_PREFIXES').split()]:
-        asg = "{}-{}-{}".format(conf.get('AUTOSCALE_GROUP'),
-                                queue_prefix, conf.get('VENUE'))
+    instance_types = conf.get('INSTANCE_TYPES').split()
+    for i, queue in enumerate([i.strip() for i in conf.get('QUEUES').split()]):
+        asg = "{}-{}".format(conf.get('VENUE'), queue)
         if asg in cur_asgs:
             print("ASG {} already exists. Skipping.".format(asg))
             continue
@@ -177,12 +177,13 @@ def create(args, conf):
 
         # get user data
         user_data = "BUNDLE_URL=s3://{}/{}-{}.tbz2".format(conf.get('CODE_BUCKET'),
-                                                           queue_prefix, conf.get('VENUE'))
+                                                           queue, conf.get('VENUE'))
 
         # prompt instance type
         instance_type = prompt(get_prompt_tokens=lambda x: [(Token, "Refer to https://www.ec2instances.info/ "),
                                                             (Token, "and enter instance type to use for launch "),
                                                             (Token, "configuration: ")], style=prompt_style,
+                                                            default=unicode(instance_types[i]),
                                                             validator=Ec2InstanceTypeValidator()).strip()
         logger.debug("instance type: {}".format(instance_type))
 
@@ -250,8 +251,8 @@ def create(args, conf):
                     'PropagateAtLaunch': True,
                 },
                 {
-                    'Key': 'QueuePrefix',
-                    'Value': queue_prefix,
+                    'Key': 'Queue',
+                    'Value': queue,
                     'PropagateAtLaunch': True,
                 },
             ],
@@ -261,36 +262,34 @@ def create(args, conf):
         logger.debug("Autoscaling group {}: {}".format(asg, pformat(asg_info)))
         print("Created autoscaling group {}".format(asg))
 
-        # add target tracking scaling policies
-        for size in ('large', 'small'):
-            queue = "{}-job_worker-{}".format(queue_prefix, size) 
-            policy_name = "{}-{}-target-tracking".format(asg, size)
-            metric_name = "JobsWaitingPerInstance-{}-{}".format(queue, asg)
-            ttsp_args = {
-                'AutoScalingGroupName': asg,
-                'PolicyName': policy_name,
-                'PolicyType': 'TargetTrackingScaling',
-                'TargetTrackingConfiguration': {
-                    'CustomizedMetricSpecification': {
-                        'MetricName': metric_name,
-                        'Namespace': 'HySDS',
-                        'Dimensions': [
-                            {
-                                'Name': 'AutoScalingGroupName',
-                                'Value': asg,
-                            },
-                            {
-                                'Name': 'Queue',
-                                'Value': queue,
-                            }
-                        ],
-                        'Statistic': 'Maximum'
-                    },
-                    'TargetValue': 1.0,
-                    'DisableScaleIn': True
-                }, 
-            }
-            logger.debug("ttsp_args: {}".format(pformat(ttsp_args)))
-            ttsp_info = c.put_scaling_policy(**ttsp_args)
-            logger.debug("Target tracking scaling policy {}: {}".format(policy_name, pformat(ttsp_info)))
-            print("Added target tracking scaling policy {} to {}".format(policy_name, asg))
+        # add target tracking scaling policy
+        policy_name = "{}-target-tracking".format(asg)
+        metric_name = "JobsWaitingPerInstance-{}".format(asg)
+        ttsp_args = {
+            'AutoScalingGroupName': asg,
+            'PolicyName': policy_name,
+            'PolicyType': 'TargetTrackingScaling',
+            'TargetTrackingConfiguration': {
+                'CustomizedMetricSpecification': {
+                    'MetricName': metric_name,
+                    'Namespace': 'HySDS',
+                    'Dimensions': [
+                        {
+                            'Name': 'AutoScalingGroupName',
+                            'Value': asg,
+                        },
+                        {
+                            'Name': 'Queue',
+                            'Value': queue,
+                        }
+                    ],
+                    'Statistic': 'Maximum'
+                },
+                'TargetValue': 1.0,
+                'DisableScaleIn': True
+            }, 
+        }
+        logger.debug("ttsp_args: {}".format(pformat(ttsp_args)))
+        ttsp_info = c.put_scaling_policy(**ttsp_args)
+        logger.debug("Target tracking scaling policy {}: {}".format(policy_name, pformat(ttsp_info)))
+        print("Added target tracking scaling policy {} to {}".format(policy_name, asg))

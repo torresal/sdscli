@@ -99,8 +99,8 @@ def create_staging_area(args, conf):
     # create SNS topic
     logger.debug("prefix: {}".format(args.prefix))
     logger.debug("suffix: {}".format(args.suffix))
-    shasum = hashlib.sha224("{}-{}".format(args.prefix, args.suffix)).hexdigest()
-    topic_name = "{}-{}-{}".format(conf.get('VENUE'), bucket_name, shasum[:4])
+    shasum = hashlib.sha224("{}-{}-{}".format(bucket_name, args.prefix, args.suffix)).hexdigest()
+    topic_name = "{}-dataset-{}".format(conf.get('VENUE'), shasum[:4])
     logger.debug("topic_name: {}".format(topic_name))
     topic_arn = create_topic(Name=topic_name, c=sns_client)['TopicArn']
     logger.debug("topic_arn: {}".format(topic_arn))
@@ -233,8 +233,8 @@ def create_staging_area(args, conf):
     logger.debug("job queue: {}".format(job_queue))
 
     # create lambda
-    function_name = "{}-{}-submit_data_staged_ingest".format(conf.get('VENUE'),
-                                                             args.prefix.replace('/', ''))
+    function_name = "{}-dataset-{}-submit_ingest".format(conf.get('VENUE'),
+                                                         args.prefix.replace('/', ''))
     lambda_client = boto3.client('lambda')
     cf_args = {
         "FunctionName": function_name,
