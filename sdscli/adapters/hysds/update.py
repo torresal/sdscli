@@ -299,12 +299,14 @@ def update_grq(conf, comp='grq'):
         execute(fab.send_grq2conf, roles=[comp])
         bar.update()
 
-        # update tosca config
-        set_bar_desc(bar, 'Updating tosca config')
+        # update tosca config and facetview.html
+        set_bar_desc(bar, 'Updating tosca config and facetview.html')
         execute(fab.rm_rf, '~/sciflo/ops/tosca/settings.cfg', roles=[comp])
         execute(fab.send_toscaconf, 'tosca_settings.cfg.tmpl', roles=[comp])
-        execute(fab.ln_sf, '~/sciflo/ops/tosca/configs/actions_config.json.example', 
-                '~/sciflo/ops/tosca/actions_config.json', roles=[comp])
+        tosca_fv = os.path.join(get_user_files_path(), 'tosca_facetview.html')
+        if os.path.exists(tosca_fv):
+            execute(fab.copy, tosca_fv, '~/sciflo/ops/tosca/tosca/templates/facetview.html', roles=[comp])
+            execute(fab.chmod, 644, '~/sciflo/ops/tosca/tosca/templates/facetview.html', roles=[comp])
         bar.update()
 
         # update supervisor config
