@@ -1,0 +1,8 @@
+[core]
+account = {{ GCP_ACCOUNT }}
+project = {{ GCP_PROJECT }}
+
+[compute]
+zone = {{ GCP_ZONE }}
+region = {{ GCP_REGION }}
+
