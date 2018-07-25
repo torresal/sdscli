@@ -527,7 +527,7 @@ def verdid_start(force=False):
 
 
 def verdid_clean_start():
-    run('rm -rf /data/work/scifloWork-ops/* /data/work/jobs/* /data/work/cache/* %s/verdi/log/*' % ops_dir)
+    run('rm -rf /data/work/scifloWork-ops/* /data/work/jobs/* %s/verdi/log/*' % ops_dir)
     verdid_start(True)
 
 
@@ -568,6 +568,15 @@ def pip_install_with_req(node_type, dest):
         with cd(dest):
             run('pip install --process-dependency-links -e .')
 
+def pip_install_with_req(node_type, dest, ndeps):
+    with prefix('source ~/%s/bin/activate' % node_type):
+        with cd(dest):
+	    if ndeps:
+		logger.debug("nedps is set, so running pip without process-dependency-links")
+		run('pip install -e .')
+	    else:
+		logger.debug("nedps is NOT set, so running pip with process-dependency-links")
+            	run('pip install --process-dependency-links -e .')
 
 def python_setup_develop(node_type, dest):
     with prefix('source ~/%s/bin/activate' % node_type):
