@@ -241,32 +241,8 @@ def update_metrics(conf, ndeps=False, comp='metrics'):
         set_bar_desc(bar, 'Configuring AWS creds')
         execute(fab.send_awscreds, roles=[comp])
         bar.update()
-
-        create_kibana(conf, comp)
         set_bar_desc(bar, 'Updated metrics')
 
-def create_kibana(conf, comp='metrics'):
-    """"Update metrics component."""
-
-    # progress bar
-    with tqdm(total=20) as bar:
-
-        # ensure venv
-        set_bar_desc(bar, 'Ensuring HySDS venv')
-        execute(fab.ensure_venv, comp, roles=[comp])
-        bar.update()
-
-	#create kibana metrics
-        set_bar_desc(bar, 'creating kibana metrics')
-        execute(fab.rm_rf, '~/metrics/ops/kibana_metrics', roles=[comp])
-        execute(fab.mkdir, '~/metrics/ops/kibana_metrics', 'ops', 'ops', roles=[comp])
-	execute(fab.send_template, 'export_dashboard.sh.tmpl',
-                '~/metrics/ops/kibana_metrics/export_dashboard.sh', '~/mozart/ops/swot-pcm/conf/sds/files/kibana_dashboard_import',
-                roles=[comp])
-	execute(fab.chmod, 755, '~/metrics/ops/kibana_metrics/export_dashboard.sh', roles=[comp])
-	execute(fab.copy, '~/mozart/ops/swot-pcm/conf/sds/files/kibana_dashboard_import/job-dashboards.json',  '~/metrics/ops/kibana_metrics/job-dashboards.json', roles=[comp])
-	execute(fab.copy, '~/mozart/ops/swot-pcm/conf/sds/files/kibana_dashboard_import/worker-dashboards.json',  '~/metrics/ops/kibana_metrics/worker-dashboards.json', roles=[comp])
-        execute(fab.import_kibana,  '~/metrics/ops/kibana_metrics/export_dashboard.sh', roles=[comp])
 
 def update_grq(conf, ndeps=False, comp='grq'):
     """"Update grq component."""
@@ -681,3 +657,53 @@ def ship(encrypt, debug=False):
     else:
         with hide('everything'):
             ship_verdi(conf, encrypt)
+
+def import_kibana(comp='metrics'):
+    """"Update metrics component."""
+
+    # progress bar
+    with tqdm(total=20) as bar:
+
+        # ensure venv
+        set_bar_desc(bar, 'Ensuring HySDS venv')
+        execute(fab.ensure_venv, comp, roles=[comp])
+        bar.update()
+
+        #create kibana metrics
+        set_bar_desc(bar, 'creating kibana metrics')
+        execute(fab.rm_rf, '~/metrics/ops/kibana_metrics', roles=[comp])
+        execute(fab.mkdir, '~/metrics/ops/kibana_metrics', 'ops', 'ops', roles=[comp])
+        execute(fab.send_template, 'import_dashboard.sh.tmpl',
+                '~/metrics/ops/kibana_metrics/import_dashboard.sh', '~/mozart/ops/swot-pcm/conf/sds/files/kibana_dashboard_import',
+                roles=[comp])
+        execute(fab.chmod, 755, '~/metrics/ops/kibana_metrics/import_dashboard.sh', roles=[comp])
+        execute(fab.copy, '~/mozart/ops/swot-pcm/conf/sds/files/kibana_dashboard_import/job-dashboards.json',  '~/metrics/ops/kibana_metrics/job-dashboards.json', roles=[comp])
+        execute(fab.copy, '~/mozart/ops/swot-pcm/conf/sds/files/kibana_dashboard_import/worker-dashboards.json',  '~/metrics/ops/kibana_metrics/worker-dashboards.json', roles=[comp])
+        execute(fab.import_kibana,  '~/metrics/ops/kibana_metrics/import_dashboard.sh', roles=[comp])
+
+def process_kibana_job(job_type, conf):
+    if job_type.lower()=="import":
+        import_kibana()
+    else:
+	logger.debug("Not implemented %s" % job_type)
+
+
+def kibana(job_type, debug=False, force=False):
+    """Update components."""
+
+    # prompt user
+    if not force:
+        cont = prompt(get_prompt_tokens=lambda x: [(Token.Alert,
+                      "Updating Kibana: {}. Continue [y/n]: ".format(job_type)), (Token, " ")],
+                      validator=YesNoValidator(), style=prompt_style) == 'y'
+        if not cont: return 0
+
+    # get user's SDS conf settings
+    conf = SettingsConf()
+
+    logger.debug("Processing %s" % job_type)
+
+    if debug: process_kibana_job(job_type, conf)
+    else:
+        with hide('everything'):
+            process_kibana_job(job_type, conf)
