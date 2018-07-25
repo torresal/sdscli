@@ -519,6 +519,8 @@ def kill_hung():
     except: pass
     ps_x()
 
+def import_kibana(import_cmd):
+    run(import_cmd)
 
 def verdid_start(force=False):
     if not exists('verdi/run/supervisord.pid') or force:
