@@ -764,9 +764,9 @@ def ship_code(cwd, tar_file, encrypt=False):
     with cd(cwd):
         run('tar --exclude-vcs -cvjf %s *' % tar_file)
     if encrypt is False:
-        run('gsutil cp %s gs://%s/' % (tar_file, ctx['CODE_BUCKET']))
+        run('aws s3 cp %s s3://%s/' % (tar_file, ctx['CODE_BUCKET']))
     else:
-        run('gsutil cp %s gs://%s/' % (tar_file, ctx['CODE_BUCKET']))
+        run('aws s3 cp --sse %s s3://%s/' % (tar_file, ctx['CODE_BUCKET']))
 
 
 ##########################
@@ -822,13 +822,13 @@ def ship_style(bucket=None, encrypt=False):
     upload_template('s3-bucket-listing.html.tmpl', index_file, use_jinja=True, 
                     context=ctx, template_dir=get_user_files_path())
     if encrypt is False:
-        run('gsutil cp %s gs://%s/index.html' % (index_file, bucket))
-        run('gsutil cp %s gs://%s/' % (list_js, bucket))
-        run('gsutil cp %s gs://%s/index-style' % (index_style, bucket))
+        run('aws s3 cp %s s3://%s/index.html' % (index_file, bucket))
+        run('aws s3 cp %s s3://%s/' % (list_js, bucket))
+        run('aws s3 sync %s s3://%s/index-style' % (index_style, bucket))
     else:
-        run('gsutil cp %s gs://%s/index.html' % (index_file, bucket))
-        run('gsutil cp %s gs://%s/' % (list_js, bucket))
-        run('gsutil cp %s gs://%s/index-style' % (index_style, bucket))
+        run('aws s3 cp --sse %s s3://%s/index.html' % (index_file, bucket))
+        run('aws s3 cp --sse %s s3://%s/' % (list_js, bucket))
+        run('aws s3 sync --sse %s s3://%s/index-style' % (index_style, bucket))
 
 
 ##########################
