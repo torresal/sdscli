@@ -574,10 +574,10 @@ def pip_install_with_req(node_type, dest, ndeps):
     with prefix('source ~/%s/bin/activate' % node_type):
         with cd(dest):
 	    if ndeps:
-		logger.debug("nedps is set, so running pip without process-dependency-links")
-		run('pip install -e .')
+		logger.debug("ndeps is set, so running pip without process-dependency-links")
+		run('pip install --no-deps -e .')
 	    else:
-		logger.debug("nedps is NOT set, so running pip with process-dependency-links")
+		logger.debug("ndeps is NOT set, so running pip with process-dependency-links")
             	run('pip install --process-dependency-links -e .')
 
 def python_setup_develop(node_type, dest):
