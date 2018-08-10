@@ -103,6 +103,12 @@ VERDI_PVT_IP: {VERDI_PVT_IP}
 VERDI_PUB_IP: {VERDI_PUB_IP}
 VERDI_FQDN: {VERDI_FQDN}
 
+# other non-autoscale verdi hosts (optional)
+OTHER_VERDI_HOSTS:
+  - VERDI_PVT_IP:
+    VERDI_PUB_IP:
+    VERDI_FQDN:
+
 # WebDAV product server
 DAV_SERVER: {DAV_SERVER}
 DAV_USER: {DAV_USER}

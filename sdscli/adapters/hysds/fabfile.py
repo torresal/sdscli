@@ -59,6 +59,8 @@ ci_host = '%s' % context['CI_PVT_IP']
 verdi_hosts = [
     '%s' % context['VERDI_PVT_IP'],
 ]
+if context.get('OTHER_VERDI_HOSTS', None) is not None:
+    verdi_hosts.extend([i['VERDI_PVT_IP'] for i in context['OTHER_VERDI_HOSTS'] if i['VERDI_PVT_IP'] is not None])
 
 # define roles
 env.roledefs = {
