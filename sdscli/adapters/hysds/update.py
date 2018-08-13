@@ -574,10 +574,9 @@ def update(comp, debug=False, force=False):
             update_comp(comp, conf)
 
 
-def ship_verdi(conf, encrypt=False):
+def ship_verdi(conf, encrypt=False, comp='ci'):
     """"Ship verdi code/config bundle."""
 
-    comp = 'verdi'
     venue = conf.get('VENUE')
     queues = [i.strip() for i in conf.get('QUEUES').split()]
 
