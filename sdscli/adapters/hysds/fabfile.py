@@ -7,7 +7,7 @@ from __future__ import print_function
 
 import os, re, yaml, json, requests
 from copy import deepcopy
-from fabric.api import run, cd, put, sudo, prefix, env, settings
+from fabric.api import run, cd, put, sudo, prefix, env, settings, hide
 from fabric.contrib.files import upload_template, exists, append
 from fabric.contrib.project import rsync_project
 
@@ -357,6 +357,12 @@ def list_docker_images():
 
 def stop_docker_containers():
     run('docker stop $(docker ps -aq)')
+
+
+def systemctl_status(service):
+    with settings(warn_only=True):
+        with hide('everything'):
+            return run('sudo systemctl status %s' % service, pty=False)
 
 
 def status():
