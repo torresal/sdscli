@@ -102,16 +102,6 @@ def get_context(node_type=None):
 
     ctx = deepcopy(context)
 
-    # use public IP for build hosts not on infrastructure LAN
-    #if env.host_string in (govcloud_build_verdi_host, jplcloud_build_verdi_host,
-    #                       docker_build_verdi_host, ts_verdi_host, leaflet_host):
-    #    for pvt_ip in ('MOZART_PVT_IP', 'METRICS_PVT_IP', 'GRQ_PVT_IP',
-    #                   'FACTOTUM_PVT_IP', 'PUCCINI_PVT_IP', 'VERDI_PVT_IP',
-    #                   'VERDI_ML_PVT_IP', 'GOVCLOUD_VERDI_PVT_IP',
-    #                   'JPLCLOUD_VERDI_PVT_IP', 'DOCKER_VERDI_PVT_IP',
-    #                   'VERDI_TS_PVT_IP'):
-    #        ctx[pvt_ip] = ctx[pvt_ip.replace('_PVT_', '_PUB_')]
-
     if node_type == 'mozart':
         if ctx['MOZART_PVT_IP'] == ctx['MOZART_RABBIT_PVT_IP']:
             ctx['MOZART_RABBIT_PVT_IP'] = "127.0.0.1"
@@ -129,6 +119,12 @@ def get_context(node_type=None):
     if node_type == 'grq':
         if ctx['GRQ_PVT_IP'] == ctx['GRQ_ES_PVT_IP']:
             ctx['GRQ_ES_PVT_IP'] = "127.0.0.1"
+
+    # set redis passwords
+    if ctx['MOZART_REDIS_PASSWORD'] is None:
+        ctx['MOZART_REDIS_PASSWORD'] = ''
+    if ctx['METRICS_REDIS_PASSWORD'] is None:
+        ctx['METRICS_REDIS_PASSWORD'] = ''
 
     # set hostname
     ctx['HOST_STRING'] = env.host_string
@@ -452,12 +448,23 @@ def mozartd_stop():
 
 
 def redis_flush():
-    run('redis-cli flushall')
+    role, hysds_dir, hostname = resolve_role()
+    ctx = get_context()
+    if role == 'mozart' and ctx['MOZART_REDIS_PASSWORD'] != '':
+        cmd = 'redis-cli -a {MOZART_REDIS_PASSWORD} flushall'.format(**ctx)
+    elif role == 'metrics' and ctx['METRICS_REDIS_PASSWORD'] != '':
+        cmd = 'redis-cli -a {METRICS_REDIS_PASSWORD} flushall'.format(**ctx)
+    else:
+        cmd = 'redis-cli flushall'.format(**ctx)
+    run(cmd)
 
 
 def mozart_redis_flush():
     ctx = get_context()
-    run('redis-cli -h {MOZART_REDIS_PVT_IP} flushall'.format(**ctx))
+    if ctx['MOZART_REDIS_PASSWORD'] != '':
+        run('redis-cli -a {MOZART_REDIS_PASSWORD} -h {MOZART_REDIS_PVT_IP} flushall'.format(**ctx))
+    else:
+        run('redis-cli -h {MOZART_REDIS_PVT_IP} flushall'.format(**ctx))
 
 
 def rabbitmq_queues_flush():
