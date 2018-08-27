@@ -46,6 +46,7 @@ MOZART_RABBIT_PASSWORD: {MOZART_RABBIT_PASSWORD}
 MOZART_REDIS_PVT_IP: {MOZART_REDIS_PVT_IP}
 MOZART_REDIS_PUB_IP: {MOZART_REDIS_PUB_IP}
 MOZART_REDIS_FQDN: {MOZART_REDIS_FQDN}
+MOZART_REDIS_PASSWORD: {MOZART_REDIS_PASSWORD}
 
 # mozart ES
 MOZART_ES_PVT_IP: {MOZART_ES_PVT_IP}
@@ -69,6 +70,7 @@ METRICS_FQDN: {METRICS_FQDN}
 METRICS_REDIS_PVT_IP: {METRICS_REDIS_PVT_IP}
 METRICS_REDIS_PUB_IP: {METRICS_REDIS_PUB_IP}
 METRICS_REDIS_FQDN: {METRICS_REDIS_FQDN}
+METRICS_REDIS_PASSWORD: {METRICS_REDIS_PASSWORD}
 
 # metrics ES
 METRICS_ES_PVT_IP: {METRICS_ES_PVT_IP}
@@ -175,6 +177,7 @@ CFG_DEFAULTS = {
         [ "MOZART_REDIS_PVT_IP", ""], 
         [ "MOZART_REDIS_PUB_IP", ""], 
         [ "MOZART_REDIS_FQDN", ""], 
+        [ "MOZART_REDIS_PASSWORD", ""],
     ],
     
     "mozart-es": [
@@ -202,6 +205,7 @@ CFG_DEFAULTS = {
         [ "METRICS_REDIS_PVT_IP", ""],
         [ "METRICS_REDIS_PUB_IP", ""],
         [ "METRICS_REDIS_FQDN", ""],
+        [ "METRICS_REDIS_PASSWORD", ""],
     ],
     
     "metrics-es": [
@@ -367,6 +371,20 @@ def configure():
                         v = p1
                         break
                     print("Passwords don't match.")
+            elif k == 'MOZART_REDIS_PASSWORD':
+                while True:
+                    p1 = prompt(get_prompt_tokens=lambda x: [(Token, "Enter Redis password: ")],
+                               default=unicode(cfg.get(k, d)),
+                               style=prompt_style,
+                               is_password=True)
+                    p2 = prompt(get_prompt_tokens=lambda x: [(Token, "Re-enter Redis password: ")],
+                               default=unicode(cfg.get(k, d)),
+                               style=prompt_style,
+                               is_password=True)
+                    if p1 == p2:
+                        v = p1
+                        break
+                    print("Passwords don't match.")
             else:
                 v = prompt(get_prompt_tokens=lambda x: [(Token, "Enter value for "),
                                                         (Token.Param, "%s" % k), 
@@ -431,11 +449,26 @@ def configure():
                 elif k.endswith('_FQDN'):
                     cfg[k] = cfg['METRICS_FQDN']
                     continue
-            v = prompt(get_prompt_tokens=lambda x: [(Token, "Enter value for "),
-                                                    (Token.Param, "%s" % k), 
-                                                    (Token, ": ")],
-                       default=unicode(cfg.get(k, d)),
-                       style=prompt_style)
+            if k == 'METRICS_REDIS_PASSWORD':
+                while True:
+                    p1 = prompt(get_prompt_tokens=lambda x: [(Token, "Enter Redis password: ")],
+                               default=unicode(cfg.get(k, d)),
+                               style=prompt_style,
+                               is_password=True)
+                    p2 = prompt(get_prompt_tokens=lambda x: [(Token, "Re-enter Redis password: ")],
+                               default=unicode(cfg.get(k, d)),
+                               style=prompt_style,
+                               is_password=True)
+                    if p1 == p2:
+                        v = p1
+                        break
+                    print("Passwords don't match.")
+            else:
+                v = prompt(get_prompt_tokens=lambda x: [(Token, "Enter value for "),
+                                                        (Token.Param, "%s" % k), 
+                                                        (Token, ": ")],
+                           default=unicode(cfg.get(k, d)),
+                           style=prompt_style)
             cfg[k] = v
 
     # grq
