@@ -96,7 +96,7 @@ def print_service_status(service, ret, debug=False):
     if status == 'active':
         print("{}: {}".format(service, highlight(status.upper())))
     else:
-        print("{}: {}".format(service, highlight(status.upper(), 'red')))
+        print("{}: {}".format(service, blink(highlight(status.upper(), 'red'))))
     if debug: print(stdout)
 
 
