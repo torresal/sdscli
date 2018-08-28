@@ -60,6 +60,28 @@ def ship(args):
     func(args.encrypt, args.debug)
 
 
+def start_tps(args):
+    """Start TPS on SDS components."""
+
+    logger.debug("got to start_tps(): %s" % args)
+    sds_type = args.type
+    logger.debug("sds_type: %s" % sds_type)
+    func = get_adapter_func(sds_type, 'start_tps', 'start') 
+    logger.debug("func: %s" % func)
+    func(args.component, args.debug, args.force)
+
+
+def stop_tps(args):
+    """Stop TPS on SDS components."""
+
+    logger.debug("got to stop_tps(): %s" % args)
+    sds_type = args.type
+    logger.debug("sds_type: %s" % sds_type)
+    func = get_adapter_func(sds_type, 'stop_tps', 'stop') 
+    logger.debug("func: %s" % func)
+    func(args.component, args.debug, args.force)
+
+
 def start(args):
     """Start SDS components."""
 
@@ -199,6 +221,26 @@ def main():
     parser_ship.add_argument('--encrypt', '-e', action='store_true',
                              help="encrypt code/config bundle")
     parser_ship.set_defaults(func=ship)
+
+    # parser for start_tps
+    parser_start_tps = subparsers.add_parser('start_tps', help="start TPS on SDS components")
+    parser_start_tps.add_argument('--type', '-t', default='hysds', const='hysds', nargs='?',
+                              choices=['hysds', 'sdskit'])
+    parser_start_tps.add_argument('component', choices=['mozart', 'grq', 'metrics', 
+                              'ci', 'all'])
+    parser_start_tps.add_argument('--force', '-f', action='store_true',
+                              help="force start without user confirmation")
+    parser_start_tps.set_defaults(func=start_tps)
+
+    # parser for stop_tps
+    parser_stop_tps = subparsers.add_parser('stop_tps', help="stop TPS on SDS components")
+    parser_stop_tps.add_argument('--type', '-t', default='hysds', const='hysds', nargs='?',
+                              choices=['hysds', 'sdskit'])
+    parser_stop_tps.add_argument('component', choices=['mozart', 'grq', 'metrics', 
+                              'ci', 'all'])
+    parser_stop_tps.add_argument('--force', '-f', action='store_true',
+                              help="force stop without user confirmation")
+    parser_stop_tps.set_defaults(func=stop_tps)
 
     # parser for start
     parser_start = subparsers.add_parser('start', help="start SDS components")
