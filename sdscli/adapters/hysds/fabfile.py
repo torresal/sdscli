@@ -359,10 +359,10 @@ def stop_docker_containers():
     run('docker stop $(docker ps -aq)')
 
 
-def systemctl_status(service):
+def systemctl(cmd, service):
     with settings(warn_only=True):
         with hide('everything'):
-            return run('sudo systemctl status %s' % service, pty=False)
+            return run('sudo systemctl %s %s' % (cmd, service), pty=False)
 
 
 def status():

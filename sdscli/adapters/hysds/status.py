@@ -108,33 +108,33 @@ def print_tps_status(conf, comp, debug=False):
         #print_rabbitmq_status(conf.get('MOZART_RABBIT_USER'),
         #                      conf.get('MOZART_RABBIT_PASSWORD'),
         #                      conf.get('MOZART_RABBIT_PVT_IP'))
-        ret = execute(fab.systemctl_status, 'rabbitmq-server', roles=[comp])
+        ret = execute(fab.systemctl, 'status', 'rabbitmq-server', roles=[comp])
         print_service_status('rabbitmq-server', ret, debug)
         #print_redis_status(conf.get('MOZART_REDIS_PASSWORD'),
         #                   conf.get('MOZART_REDIS_PVT_IP'))
-        ret = execute(fab.systemctl_status, 'redis', roles=[comp])
+        ret = execute(fab.systemctl, 'status', 'redis', roles=[comp])
         print_service_status('redis', ret, debug)
         #print_es_status(conf.get('MOZART_ES_PVT_IP'))
-        ret = execute(fab.systemctl_status, 'elasticsearch', roles=[comp])
+        ret = execute(fab.systemctl, 'status', 'elasticsearch', roles=[comp])
         print_service_status('elasticsearch', ret, debug)
     elif comp == 'metrics':
         print_tps_header(comp)
         #print_redis_status(conf.get('METRICS_REDIS_PASSWORD'),
         #                   conf.get('METRICS_REDIS_PVT_IP'))
-        ret = execute(fab.systemctl_status, 'redis', roles=[comp])
+        ret = execute(fab.systemctl, 'status', 'redis', roles=[comp])
         print_service_status('redis', ret, debug)
         #print_es_status(conf.get('METRICS_ES_PVT_IP')) # ES accessible only from localhost
-        ret = execute(fab.systemctl_status, 'elasticsearch', roles=[comp])
+        ret = execute(fab.systemctl, 'status', 'elasticsearch', roles=[comp])
         print_service_status('elasticsearch', ret, debug)
     elif comp == 'grq':
         print_tps_header(comp)
         #print_es_status(conf.get('GRQ_ES_PVT_IP'))
-        ret = execute(fab.systemctl_status, 'elasticsearch', roles=[comp])
+        ret = execute(fab.systemctl, 'status', 'elasticsearch', roles=[comp])
         print_service_status('elasticsearch', ret, debug)
     elif comp == 'ci':
         print_tps_header(comp)
         #print_http_status("Jenkins", "http://{}:8080".format(conf.get('CI_PVT_IP')))
-        ret = execute(fab.systemctl_status, 'jenkins', roles=[comp])
+        ret = execute(fab.systemctl, 'status', 'jenkins', roles=[comp])
         print_service_status('jenkins', ret, debug)
 
 
