@@ -289,8 +289,6 @@ def main():
     parser_ci_add_job.add_argument('repo', help='git repository url')
     parser_ci_add_job.add_argument('storage', choices=['s3', 's3s', 'gs', 'dav', 'davs'],
                                    help='image storage type')
-    parser_ci_add_job.add_argument('uid', help="image's ops UID")
-    parser_ci_add_job.add_argument('gid', help="image's ops GID")
     parser_ci_add_job.add_argument('--branch', '-b', default=None,
                                    help="register git branch instead of release")
     parser_ci_add_job.add_argument('--token', '-k', action='store_true', help="use configured OAuth token")
