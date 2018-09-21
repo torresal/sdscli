@@ -594,7 +594,7 @@ def python_setup_develop(node_type, dest):
 # ci functions
 ##########################
 
-def add_ci_job(repo, proto, uid=1001, gid=1001, branch=None, release=False):
+def add_ci_job(repo, proto, branch=None, release=False):
     with settings(sudo_user=context["JENKINS_USER"]):
         match = repo_re.search(repo)
         if not match:
@@ -609,8 +609,6 @@ def add_ci_job(repo, proto, uid=1001, gid=1001, branch=None, release=False):
         ctx = get_context()
         ctx['PROJECT_URL'] = repo
         ctx['BRANCH'] = branch
-        ctx['UID'] = uid
-        ctx['GID'] = gid
         job_dir = '%s/jobs/%s' % (ctx['JENKINS_DIR'], job_name)
         dest_file = '%s/config.xml' % job_dir
         mkdir(job_dir, None, None)
@@ -632,8 +630,8 @@ def add_ci_job(repo, proto, uid=1001, gid=1001, branch=None, release=False):
         run("rm tmp-jenkins-upload")
 
 
-def add_ci_job_release(repo, proto, uid=1001, gid=1001):
-    add_ci_job(repo, proto, uid, gid, release=True)
+def add_ci_job_release(repo, proto):
+    add_ci_job(repo, proto, release=True)
 
 
 def reload_configuration():

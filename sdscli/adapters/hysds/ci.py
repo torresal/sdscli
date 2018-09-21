@@ -51,11 +51,9 @@ def add_job(args):
 
     # add jenkins job for branch or release
     if args.branch is None:
-        execute(fab.add_ci_job_release, repo_url, args.storage, args.uid, 
-                args.gid, roles=['ci'])
+        execute(fab.add_ci_job_release, repo_url, args.storage, roles=['ci'])
     else:
-        execute(fab.add_ci_job, repo_url, args.storage, args.uid, 
-                args.gid, args.branch, roles=['ci'])
+        execute(fab.add_ci_job, repo_url, args.storage, args.branch, roles=['ci'])
 
     # reload
     execute(fab.reload_configuration, roles=['ci'])
