@@ -534,6 +534,8 @@ def kill_hung():
     except: pass
     ps_x()
 
+def import_kibana(import_cmd):
+    run(import_cmd)
 
 def verdid_start(force=False):
     if not exists('verdi/run/supervisord.pid') or force:
@@ -583,6 +585,15 @@ def pip_install_with_req(node_type, dest):
         with cd(dest):
             run('pip install --process-dependency-links -e .')
 
+def pip_install_with_req(node_type, dest, ndeps):
+    with prefix('source ~/%s/bin/activate' % node_type):
+        with cd(dest):
+	    if ndeps:
+		logger.debug("ndeps is set, so running pip without process-dependency-links")
+		run('pip install --no-deps -e .')
+	    else:
+		logger.debug("ndeps is NOT set, so running pip with process-dependency-links")
+            	run('pip install --process-dependency-links -e .')
 
 def python_setup_develop(node_type, dest):
     with prefix('source ~/%s/bin/activate' % node_type):

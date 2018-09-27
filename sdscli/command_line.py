@@ -26,6 +26,15 @@ def get_adapter_func(sds_type, mod_name, func_name):
         logger.error('Not implemented yet. Mahalo for trying. ;)')
         sys.exit(1)
 
+def kibana(args):
+    """Update SDS components."""
+    sds_type = args.type
+    logger.debug("sds_type: %s" % sds_type)
+
+    func = get_adapter_func(sds_type, 'update', 'kibana')
+    logger.debug("func: %s" % func)
+    func(args.job_type, args.debug, args.force)
+
 
 def configure(args):
     """Configure SDS config file."""
@@ -46,7 +55,8 @@ def update(args):
     logger.debug("sds_type: %s" % sds_type)
     func = get_adapter_func(sds_type, 'update', 'update') 
     logger.debug("func: %s" % func)
-    func(args.component, args.debug, args.force)
+    func(args.component, args.debug, args.force, args.ndeps)
+
 
 
 def ship(args):
@@ -212,7 +222,19 @@ def main():
                                'factotum', 'ci', 'verdi', 'all'])
     parser_update.add_argument('--force', '-f', action='store_true',
                              help="force update without user confirmation")
+    parser_update.add_argument('--ndeps', '-n', action='store_true',
+                             help="skip the external accesses for dependencies")
     parser_update.set_defaults(func=update)
+
+    # parser for kibana
+    parser_update = subparsers.add_parser('kibana', help="update SDS components")
+    parser_update.add_argument('--type', '-t', default='hysds', const='hysds', nargs='?',
+                                  choices=['hysds', 'sdskit'])
+    parser_update.add_argument('--force', '-f', action='store_true',
+                             help="force update without user confirmation")
+
+    parser_update.add_argument('job_type', choices=['import', 'export', 'delete'])
+    parser_update.set_defaults(func=kibana)
 
     # parser for ship
     parser_ship = subparsers.add_parser('ship', help="ship verdi code/config bundle")
