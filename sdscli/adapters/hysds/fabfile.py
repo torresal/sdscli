@@ -529,7 +529,7 @@ def verdid_start(force=False):
 
 
 def verdid_clean_start():
-    run('rm -rf /data/work/scifloWork-ops/* /data/work/jobs/* %s/verdi/log/*' % ops_dir)
+    run('rm -rf /data/work/scifloWork-ops/* /data/work/jobs/* /data/work/cache/* %s/verdi/log/*' % ops_dir)
     verdid_start(True)
 
 
