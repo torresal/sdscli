@@ -580,6 +580,9 @@ def configure():
     # aws-dataset
     for k, d in CFG_DEFAULTS['aws-dataset']:
         if k == 'DATASET_AWS_SECRET_KEY':
+            if cfg['DATASET_AWS_ACCESS_KEY'] == "":
+                cfg['DATASET_AWS_SECRET_KEY'] = ""
+                continue
             while True:
                 p1 = prompt(get_prompt_tokens=lambda x: [(Token, "Enter AWS secret key for "),
                                                         (Token.Username, "%s" % cfg['DATASET_AWS_ACCESS_KEY']), 
@@ -597,6 +600,13 @@ def configure():
                     v = p1
                     break
                 print("Keys don't match.")
+        elif k == 'DATASET_AWS_ACCESS_KEY':
+            v = prompt(get_prompt_tokens=lambda x: [(Token, "Enter value for "),
+                                                    (Token.Param, "%s" % k), 
+                                                    (Token, ". If using instance roles, just press enter"),
+                                                    (Token, ": ")],
+                       default=unicode(cfg.get(k, d)),
+                       style=prompt_style)
         else:
             v = prompt(get_prompt_tokens=lambda x: [(Token, "Enter value for "),
                                                     (Token.Param, "%s" % k), 
@@ -608,6 +618,9 @@ def configure():
     # aws-asg
     for k, d in CFG_DEFAULTS['aws-asg']:
         if k == 'AWS_SECRET_KEY':
+            if cfg['AWS_ACCESS_KEY'] == "":
+                cfg['AWS_SECRET_KEY'] = ""
+                continue
             while True:
                 p1 = prompt(get_prompt_tokens=lambda x: [(Token, "Enter AWS secret key for "),
                                                         (Token.Username, "%s" % cfg['AWS_ACCESS_KEY']), 
@@ -625,6 +638,13 @@ def configure():
                     v = p1
                     break
                 print("Keys don't match.")
+        elif k == 'AWS_ACCESS_KEY':
+            v = prompt(get_prompt_tokens=lambda x: [(Token, "Enter value for "),
+                                                    (Token.Param, "%s" % k), 
+                                                    (Token, ". If using instance roles, just press enter"),
+                                                    (Token, ": ")],
+                       default=unicode(cfg.get(k, d)),
+                       style=prompt_style)
         else:
             v = prompt(get_prompt_tokens=lambda x: [(Token, "Enter value for "),
                                                     (Token.Param, "%s" % k), 
