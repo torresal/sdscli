@@ -804,7 +804,7 @@ def send_awscreds():
     run('chmod 700 .aws')
     upload_template('aws_config', '.aws/config', use_jinja=True, context=ctx,
                     template_dir=get_user_files_path())
-    if ctx['AWS_ACCESS_KEY'] not in (None, ""):
+    if ctx.get('AWS_ACCESS_KEY', None) not in (None, ""):
         upload_template('aws_credentials', '.aws/credentials', use_jinja=True, context=ctx,
                         template_dir=get_user_files_path())
     run('chmod 600 .aws/*')
