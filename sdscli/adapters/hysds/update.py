@@ -29,7 +29,7 @@ prompt_style = style_from_dict({
 })
 
 
-def update_mozart(conf, comp='mozart'):
+def update_mozart(conf, ndeps=False, comp='mozart'):
     """"Update mozart component."""
 
     # progress bar
@@ -47,19 +47,19 @@ def update_mozart(conf, comp='mozart'):
 
         # update reqs
         set_bar_desc(bar, 'Updating HySDS core')
-        execute(fab.pip_install_with_req, 'mozart', '~/mozart/ops/osaka', roles=[comp])
+        execute(fab.pip_install_with_req, 'mozart', '~/mozart/ops/osaka', ndeps, roles=[comp])
         bar.update()
-        execute(fab.pip_install_with_req, 'mozart', '~/mozart/ops/prov_es', roles=[comp])
+        execute(fab.pip_install_with_req, 'mozart', '~/mozart/ops/prov_es', ndeps, roles=[comp])
         bar.update()
-        execute(fab.pip_install_with_req, 'mozart', '~/mozart/ops/hysds_commons', roles=[comp])
+        execute(fab.pip_install_with_req, 'mozart', '~/mozart/ops/hysds_commons', ndeps, roles=[comp])
         bar.update()
-        execute(fab.pip_install_with_req, 'mozart', '~/mozart/ops/hysds/third_party/celery-v3.1.25.pqueue', roles=[comp])
+        execute(fab.pip_install_with_req, 'mozart', '~/mozart/ops/hysds/third_party/celery-v3.1.25.pqueue', ndeps, roles=[comp])
         bar.update()
-        execute(fab.pip_install_with_req, 'mozart', '~/mozart/ops/hysds', roles=[comp])
+        execute(fab.pip_install_with_req, 'mozart', '~/mozart/ops/hysds', ndeps, roles=[comp])
         bar.update()
-        execute(fab.pip_install_with_req, 'mozart', '~/mozart/ops/sciflo', roles=[comp])
+        execute(fab.pip_install_with_req, 'mozart', '~/mozart/ops/sciflo', ndeps, roles=[comp])
         bar.update()
-        execute(fab.pip_install_with_req, 'mozart', '~/mozart/ops/mozart', roles=[comp])
+        execute(fab.pip_install_with_req, 'mozart', '~/mozart/ops/mozart', ndeps, roles=[comp])
         bar.update()
 
         # update celery config
@@ -158,7 +158,7 @@ def update_mozart(conf, comp='mozart'):
         set_bar_desc(bar, 'Updated mozart')
 
 
-def update_metrics(conf, comp='metrics'):
+def update_metrics(conf, ndeps=False, comp='metrics'):
     """"Update metrics component."""
 
     # progress bar
@@ -182,17 +182,17 @@ def update_metrics(conf, comp='metrics'):
 
         # update reqs
         set_bar_desc(bar, 'Updating HySDS core')
-        execute(fab.pip_install_with_req, 'metrics', '~/metrics/ops/osaka', roles=[comp])
+        execute(fab.pip_install_with_req, 'metrics', '~/metrics/ops/osaka', ndeps, roles=[comp])
         bar.update()
-        execute(fab.pip_install_with_req, 'metrics', '~/metrics/ops/prov_es', roles=[comp])
+        execute(fab.pip_install_with_req, 'metrics', '~/metrics/ops/prov_es', ndeps, roles=[comp])
         bar.update()
-        execute(fab.pip_install_with_req, 'metrics', '~/metrics/ops/hysds_commons', roles=[comp])
+        execute(fab.pip_install_with_req, 'metrics', '~/metrics/ops/hysds_commons', ndeps, roles=[comp])
         bar.update()
-        execute(fab.pip_install_with_req, 'metrics', '~/metrics/ops/hysds/third_party/celery-v3.1.25.pqueue', roles=[comp])
+        execute(fab.pip_install_with_req, 'metrics', '~/metrics/ops/hysds/third_party/celery-v3.1.25.pqueue', ndeps, roles=[comp])
         bar.update()
-        execute(fab.pip_install_with_req, 'metrics', '~/metrics/ops/hysds', roles=[comp])
+        execute(fab.pip_install_with_req, 'metrics', '~/metrics/ops/hysds', ndeps, roles=[comp])
         bar.update()
-        execute(fab.pip_install_with_req, 'metrics', '~/metrics/ops/sciflo', roles=[comp])
+        execute(fab.pip_install_with_req, 'metrics', '~/metrics/ops/sciflo', ndeps, roles=[comp])
         bar.update()
 
         # update celery config
@@ -244,7 +244,7 @@ def update_metrics(conf, comp='metrics'):
         set_bar_desc(bar, 'Updated metrics')
 
 
-def update_grq(conf, comp='grq'):
+def update_grq(conf, ndeps=False, comp='grq'):
     """"Update grq component."""
 
     # progress bar
@@ -269,21 +269,21 @@ def update_grq(conf, comp='grq'):
 
         # update reqs
         set_bar_desc(bar, 'Updating HySDS core')
-        execute(fab.pip_install_with_req, 'sciflo', '~/sciflo/ops/osaka', roles=[comp])
+        execute(fab.pip_install_with_req, 'sciflo', '~/sciflo/ops/osaka', ndeps, roles=[comp])
         bar.update()
-        execute(fab.pip_install_with_req, 'sciflo', '~/sciflo/ops/prov_es', roles=[comp])
+        execute(fab.pip_install_with_req, 'sciflo', '~/sciflo/ops/prov_es', ndeps, roles=[comp])
         bar.update()
-        execute(fab.pip_install_with_req, 'sciflo', '~/sciflo/ops/hysds_commons', roles=[comp])
+        execute(fab.pip_install_with_req, 'sciflo', '~/sciflo/ops/hysds_commons', ndeps, roles=[comp])
         bar.update()
-        execute(fab.pip_install_with_req, 'sciflo', '~/sciflo/ops/hysds/third_party/celery-v3.1.25.pqueue', roles=[comp])
+        execute(fab.pip_install_with_req, 'sciflo', '~/sciflo/ops/hysds/third_party/celery-v3.1.25.pqueue', ndeps, roles=[comp])
         bar.update()
-        execute(fab.pip_install_with_req, 'sciflo', '~/sciflo/ops/hysds', roles=[comp])
+        execute(fab.pip_install_with_req, 'sciflo', '~/sciflo/ops/hysds', ndeps, roles=[comp])
         bar.update()
-        execute(fab.pip_install_with_req, 'sciflo', '~/sciflo/ops/sciflo', roles=[comp])
+        execute(fab.pip_install_with_req, 'sciflo', '~/sciflo/ops/sciflo', ndeps, roles=[comp])
         bar.update()
-        execute(fab.pip_install_with_req, 'sciflo', '~/sciflo/ops/grq2', roles=[comp])
+        execute(fab.pip_install_with_req, 'sciflo', '~/sciflo/ops/grq2', ndeps, roles=[comp])
         bar.update()
-        execute(fab.pip_install_with_req, 'sciflo', '~/sciflo/ops/tosca', roles=[comp])
+        execute(fab.pip_install_with_req, 'sciflo', '~/sciflo/ops/tosca', ndeps, roles=[comp])
         bar.update()
 
         # update celery config
@@ -354,7 +354,7 @@ def update_grq(conf, comp='grq'):
         set_bar_desc(bar, 'Updated grq')
 
 
-def update_factotum(conf, comp='factotum'):
+def update_factotum(conf, ndeps=False, comp='factotum'):
     """"Update factotum component."""
 
     # progress bar
@@ -380,17 +380,17 @@ def update_factotum(conf, comp='factotum'):
 
         # update reqs
         set_bar_desc(bar, 'Updating HySDS core')
-        execute(fab.pip_install_with_req, 'verdi', '~/verdi/ops/osaka', roles=[comp])
+        execute(fab.pip_install_with_req, 'verdi', '~/verdi/ops/osaka', ndeps, roles=[comp])
         bar.update()
-        execute(fab.pip_install_with_req, 'verdi', '~/verdi/ops/prov_es', roles=[comp])
+        execute(fab.pip_install_with_req, 'verdi', '~/verdi/ops/prov_es', ndeps, roles=[comp])
         bar.update()
-        execute(fab.pip_install_with_req, 'verdi', '~/verdi/ops/hysds_commons', roles=[comp])
+        execute(fab.pip_install_with_req, 'verdi', '~/verdi/ops/hysds_commons', ndeps, roles=[comp])
         bar.update()
-        execute(fab.pip_install_with_req, 'verdi', '~/verdi/ops/hysds/third_party/celery-v3.1.25.pqueue', roles=[comp])
+        execute(fab.pip_install_with_req, 'verdi', '~/verdi/ops/hysds/third_party/celery-v3.1.25.pqueue', ndeps, roles=[comp])
         bar.update()
-        execute(fab.pip_install_with_req, 'verdi', '~/verdi/ops/hysds', roles=[comp])
+        execute(fab.pip_install_with_req, 'verdi', '~/verdi/ops/hysds', ndeps, roles=[comp])
         bar.update()
-        execute(fab.pip_install_with_req, 'verdi', '~/verdi/ops/sciflo', roles=[comp])
+        execute(fab.pip_install_with_req, 'verdi', '~/verdi/ops/sciflo', ndeps, roles=[comp])
         bar.update()
 
         # update celery config
@@ -434,7 +434,7 @@ def update_factotum(conf, comp='factotum'):
         set_bar_desc(bar, 'Updated factotum')
 
 
-def update_verdi(conf, comp='verdi'):
+def update_verdi(conf, ndeps=False, comp='verdi'):
     """"Update verdi component."""
 
     # progress bar
@@ -466,17 +466,17 @@ def update_verdi(conf, comp='verdi'):
 
         # update reqs
         set_bar_desc(bar, 'Updating HySDS core')
-        execute(fab.pip_install_with_req, 'verdi', '~/verdi/ops/osaka', roles=[comp])
+        execute(fab.pip_install_with_req, 'verdi', '~/verdi/ops/osaka', ndeps, roles=[comp])
         bar.update()
-        execute(fab.pip_install_with_req, 'verdi', '~/verdi/ops/prov_es', roles=[comp])
+        execute(fab.pip_install_with_req, 'verdi', '~/verdi/ops/prov_es', ndeps, roles=[comp])
         bar.update()
-        execute(fab.pip_install_with_req, 'verdi', '~/verdi/ops/hysds_commons', roles=[comp])
+        execute(fab.pip_install_with_req, 'verdi', '~/verdi/ops/hysds_commons', ndeps, roles=[comp])
         bar.update()
-        execute(fab.pip_install_with_req, 'verdi', '~/verdi/ops/hysds/third_party/celery-v3.1.25.pqueue', roles=[comp])
+        execute(fab.pip_install_with_req, 'verdi', '~/verdi/ops/hysds/third_party/celery-v3.1.25.pqueue', ndeps, roles=[comp])
         bar.update()
-        execute(fab.pip_install_with_req, 'verdi', '~/verdi/ops/hysds', roles=[comp])
+        execute(fab.pip_install_with_req, 'verdi', '~/verdi/ops/hysds', ndeps, roles=[comp])
         bar.update()
-        execute(fab.pip_install_with_req, 'verdi', '~/verdi/ops/sciflo', roles=[comp])
+        execute(fab.pip_install_with_req, 'verdi', '~/verdi/ops/sciflo', ndeps, roles=[comp])
         bar.update()
 
         # update celery config
@@ -520,7 +520,7 @@ def update_verdi(conf, comp='verdi'):
         set_bar_desc(bar, 'Updated verdi')
 
 
-def update_comp(comp, conf):
+def update_comp(comp, conf, ndeps=False):
     """Update component."""
 
     # if all, create progress bar
@@ -529,31 +529,31 @@ def update_comp(comp, conf):
         # progress bar
         with tqdm(total=5) as bar:
             set_bar_desc(bar, "Updating grq")
-            update_grq(conf)
+            update_grq(conf, ndeps)
             bar.update()
             set_bar_desc(bar, "Updating mozart")
-            update_mozart(conf)
+            update_mozart(conf, ndeps)
             bar.update()
             set_bar_desc(bar, "Updating metrics")
-            update_metrics(conf)
+            update_metrics(conf, ndeps)
             bar.update()
             set_bar_desc(bar, "Updating factotum")
-            update_factotum(conf)
+            update_factotum(conf, ndeps)
             bar.update()
             set_bar_desc(bar, "Updating verdi")
-            update_verdi(conf)
+            update_verdi(conf, ndeps)
             bar.update()
             set_bar_desc(bar, "Updated all")
             print("")
     else:
-        if comp == 'grq': update_grq(conf)
-        if comp == 'mozart': update_mozart(conf)
-        if comp == 'metrics': update_metrics(conf)
-        if comp == 'factotum': update_factotum(conf)
-        if comp == 'verdi': update_verdi(conf)
+        if comp == 'grq': update_grq(conf, ndeps)
+        if comp == 'mozart': update_mozart(conf, ndeps)
+        if comp == 'metrics': update_metrics(conf, ndeps)
+        if comp == 'factotum': update_factotum(conf, ndeps)
+        if comp == 'verdi': update_verdi(conf, ndeps)
 
 
-def update(comp, debug=False, force=False):
+def update(comp, debug=False, force=False, ndeps=False):
     """Update components."""
 
     # prompt user
@@ -568,16 +568,15 @@ def update(comp, debug=False, force=False):
 
     logger.debug("Updating %s" % comp)
 
-    if debug: update_comp(comp, conf)
+    if debug: update_comp(comp, conf, ndeps)
     else:
         with hide('everything'):
-            update_comp(comp, conf)
+            update_comp(comp, conf, ndeps)
 
 
-def ship_verdi(conf, encrypt=False):
+def ship_verdi(conf, encrypt=False, comp='ci'):
     """"Ship verdi code/config bundle."""
 
-    comp = 'verdi'
     venue = conf.get('VENUE')
     queues = [i.strip() for i in conf.get('QUEUES').split()]
 
@@ -657,3 +656,53 @@ def ship(encrypt, debug=False):
     else:
         with hide('everything'):
             ship_verdi(conf, encrypt)
+
+def import_kibana(comp='metrics'):
+    """"Update metrics component."""
+
+    # progress bar
+    with tqdm(total=20) as bar:
+
+        # ensure venv
+        set_bar_desc(bar, 'Ensuring HySDS venv')
+        execute(fab.ensure_venv, comp, roles=[comp])
+        bar.update()
+
+        #create kibana metrics
+        set_bar_desc(bar, 'creating kibana metrics')
+        execute(fab.rm_rf, '~/metrics/ops/kibana_metrics', roles=[comp])
+        execute(fab.mkdir, '~/metrics/ops/kibana_metrics', 'ops', 'ops', roles=[comp])
+        execute(fab.send_template, 'import_dashboard.sh.tmpl',
+                '~/metrics/ops/kibana_metrics/import_dashboard.sh', '~/mozart/ops/swot-pcm/conf/sds/files/kibana_dashboard_import',
+                roles=[comp])
+        execute(fab.chmod, 755, '~/metrics/ops/kibana_metrics/import_dashboard.sh', roles=[comp])
+        execute(fab.copy, '~/mozart/ops/swot-pcm/conf/sds/files/kibana_dashboard_import/job-dashboards.json',  '~/metrics/ops/kibana_metrics/job-dashboards.json', roles=[comp])
+        execute(fab.copy, '~/mozart/ops/swot-pcm/conf/sds/files/kibana_dashboard_import/worker-dashboards.json',  '~/metrics/ops/kibana_metrics/worker-dashboards.json', roles=[comp])
+        execute(fab.import_kibana,  '~/metrics/ops/kibana_metrics/import_dashboard.sh', roles=[comp])
+
+def process_kibana_job(job_type, conf):
+    if job_type.lower()=="import":
+        import_kibana()
+    else:
+	logger.debug("Not implemented %s" % job_type)
+
+
+def kibana(job_type, debug=False, force=False):
+    """Update components."""
+
+    # prompt user
+    if not force:
+        cont = prompt(get_prompt_tokens=lambda x: [(Token.Alert,
+                      "Updating Kibana: {}. Continue [y/n]: ".format(job_type)), (Token, " ")],
+                      validator=YesNoValidator(), style=prompt_style) == 'y'
+        if not cont: return 0
+
+    # get user's SDS conf settings
+    conf = SettingsConf()
+
+    logger.debug("Processing %s" % job_type)
+
+    if debug: process_kibana_job(job_type, conf)
+    else:
+        with hide('everything'):
+            process_kibana_job(job_type, conf)

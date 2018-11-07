@@ -26,6 +26,15 @@ def get_adapter_func(sds_type, mod_name, func_name):
         logger.error('Not implemented yet. Mahalo for trying. ;)')
         sys.exit(1)
 
+def kibana(args):
+    """Update SDS components."""
+    sds_type = args.type
+    logger.debug("sds_type: %s" % sds_type)
+
+    func = get_adapter_func(sds_type, 'update', 'kibana')
+    logger.debug("func: %s" % func)
+    func(args.job_type, args.debug, args.force)
+
 
 def configure(args):
     """Configure SDS config file."""
@@ -46,7 +55,8 @@ def update(args):
     logger.debug("sds_type: %s" % sds_type)
     func = get_adapter_func(sds_type, 'update', 'update') 
     logger.debug("func: %s" % func)
-    func(args.component, args.debug, args.force)
+    func(args.component, args.debug, args.force, args.ndeps)
+
 
 
 def ship(args):
@@ -58,6 +68,28 @@ def ship(args):
     func = get_adapter_func(sds_type, 'update', 'ship') 
     logger.debug("func: %s" % func)
     func(args.encrypt, args.debug)
+
+
+def start_tps(args):
+    """Start TPS on SDS components."""
+
+    logger.debug("got to start_tps(): %s" % args)
+    sds_type = args.type
+    logger.debug("sds_type: %s" % sds_type)
+    func = get_adapter_func(sds_type, 'start_tps', 'start') 
+    logger.debug("func: %s" % func)
+    func(args.component, args.debug, args.force)
+
+
+def stop_tps(args):
+    """Stop TPS on SDS components."""
+
+    logger.debug("got to stop_tps(): %s" % args)
+    sds_type = args.type
+    logger.debug("sds_type: %s" % sds_type)
+    func = get_adapter_func(sds_type, 'stop_tps', 'stop') 
+    logger.debug("func: %s" % func)
+    func(args.component, args.debug, args.force)
 
 
 def start(args):
@@ -190,7 +222,19 @@ def main():
                                'factotum', 'ci', 'verdi', 'all'])
     parser_update.add_argument('--force', '-f', action='store_true',
                              help="force update without user confirmation")
+    parser_update.add_argument('--ndeps', '-n', action='store_true',
+                             help="skip the external accesses for dependencies")
     parser_update.set_defaults(func=update)
+
+    # parser for kibana
+    parser_update = subparsers.add_parser('kibana', help="update SDS components")
+    parser_update.add_argument('--type', '-t', default='hysds', const='hysds', nargs='?',
+                                  choices=['hysds', 'sdskit'])
+    parser_update.add_argument('--force', '-f', action='store_true',
+                             help="force update without user confirmation")
+
+    parser_update.add_argument('job_type', choices=['import', 'export', 'delete'])
+    parser_update.set_defaults(func=kibana)
 
     # parser for ship
     parser_ship = subparsers.add_parser('ship', help="ship verdi code/config bundle")
@@ -199,6 +243,26 @@ def main():
     parser_ship.add_argument('--encrypt', '-e', action='store_true',
                              help="encrypt code/config bundle")
     parser_ship.set_defaults(func=ship)
+
+    # parser for start_tps
+    parser_start_tps = subparsers.add_parser('start_tps', help="start TPS on SDS components")
+    parser_start_tps.add_argument('--type', '-t', default='hysds', const='hysds', nargs='?',
+                              choices=['hysds', 'sdskit'])
+    parser_start_tps.add_argument('component', choices=['mozart', 'grq', 'metrics', 
+                              'ci', 'all'])
+    parser_start_tps.add_argument('--force', '-f', action='store_true',
+                              help="force start without user confirmation")
+    parser_start_tps.set_defaults(func=start_tps)
+
+    # parser for stop_tps
+    parser_stop_tps = subparsers.add_parser('stop_tps', help="stop TPS on SDS components")
+    parser_stop_tps.add_argument('--type', '-t', default='hysds', const='hysds', nargs='?',
+                              choices=['hysds', 'sdskit'])
+    parser_stop_tps.add_argument('component', choices=['mozart', 'grq', 'metrics', 
+                              'ci', 'all'])
+    parser_stop_tps.add_argument('--force', '-f', action='store_true',
+                              help="force stop without user confirmation")
+    parser_stop_tps.set_defaults(func=stop_tps)
 
     # parser for start
     parser_start = subparsers.add_parser('start', help="start SDS components")
@@ -247,8 +311,6 @@ def main():
     parser_ci_add_job.add_argument('repo', help='git repository url')
     parser_ci_add_job.add_argument('storage', choices=['s3', 's3s', 'gs', 'dav', 'davs'],
                                    help='image storage type')
-    parser_ci_add_job.add_argument('uid', help="image's ops UID")
-    parser_ci_add_job.add_argument('gid', help="image's ops GID")
     parser_ci_add_job.add_argument('--branch', '-b', default=None,
                                    help="register git branch instead of release")
     parser_ci_add_job.add_argument('--token', '-k', action='store_true', help="use configured OAuth token")

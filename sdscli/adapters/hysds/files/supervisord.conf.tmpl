@@ -34,19 +34,6 @@ stdout_logfile_maxbytes=100MB
 stdout_logfile_backups=10
 startsecs=10
 
-[program:tsunamid]
-directory=/data/work
-command=/usr/local/bin/tsunamid /data/work/*
-process_name=%(program_name)s
-priority=1
-numprocs=1
-numprocs_start=0
-redirect_stderr=true
-stdout_logfile=%(here)s/../log/%(program_name)s.log
-stdout_logfile_maxbytes=100MB
-stdout_logfile_backups=10
-startsecs=10
-
 [program:instance_stats]
 directory=/home/ops/verdi/ops/hysds/scripts
 command=/home/ops/verdi/ops/hysds/scripts/log_instance_stats.py --interval 600

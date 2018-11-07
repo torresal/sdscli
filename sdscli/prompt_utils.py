@@ -108,3 +108,19 @@ def print_component_header(comp):
     print(highlight("#" * 40, 'cyan'))
     print(highlight(comp, 'cyan', True))
     print(highlight("#" * 40, 'cyan'))
+
+
+def print_tps_header(comp):
+    """Print tps header."""
+
+    print(highlight("-" * 40, 'cyan'))
+    print(highlight('third-party services', 'cyan', True))
+    print(highlight("-" * 40, 'cyan'))
+
+
+def print_supervisor_header(comp):
+    """Print supervisor header."""
+
+    print(highlight("-" * 40, 'cyan'))
+    print(highlight('supervised services', 'cyan', True))
+    print(highlight("-" * 40, 'cyan'))
