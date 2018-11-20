@@ -432,6 +432,12 @@ def clean_hysds_ios():
         run('sciflo/ops/tosca/scripts/clean_hysds_ios_indexes.sh http://localhost:9200')
 
 
+def create_grq_user_rules_index():
+    with prefix('source ~/sciflo/bin/activate'):
+        with cd('~/sciflo/ops/tosca/scripts'):
+            run('./create_user_rules_index.py')
+
+
 ##########################
 # mozart functions
 ##########################

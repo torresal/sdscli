@@ -248,7 +248,7 @@ def update_grq(conf, ndeps=False, comp='grq'):
     """"Update grq component."""
 
     # progress bar
-    with tqdm(total=21) as bar:
+    with tqdm(total=22) as bar:
 
         # ensure venv
         set_bar_desc(bar, 'Ensuring HySDS venv')
@@ -307,6 +307,11 @@ def update_grq(conf, ndeps=False, comp='grq'):
         if os.path.exists(tosca_fv):
             execute(fab.copy, tosca_fv, '~/sciflo/ops/tosca/tosca/templates/facetview.html', roles=[comp])
             execute(fab.chmod, 644, '~/sciflo/ops/tosca/tosca/templates/facetview.html', roles=[comp])
+        bar.update()
+
+        # create user_rules index
+        set_bar_desc(bar, 'Creating user_rules index')
+        execute(fab.create_grq_user_rules_index, roles=[comp])
         bar.update()
 
         # update supervisor config
