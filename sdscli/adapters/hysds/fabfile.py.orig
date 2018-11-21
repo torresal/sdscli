@@ -7,7 +7,7 @@ from __future__ import print_function
 
 import os, re, yaml, json, requests
 from copy import deepcopy
-from fabric.api import run, cd, put, sudo, prefix, env, settings, hide
+from fabric.api import run, cd, put, sudo, prefix, env, settings
 from fabric.contrib.files import upload_template, exists, append
 from fabric.contrib.project import rsync_project
 
@@ -59,8 +59,6 @@ ci_host = '%s' % context['CI_PVT_IP']
 verdi_hosts = [
     '%s' % context['VERDI_PVT_IP'],
 ]
-if context.get('OTHER_VERDI_HOSTS', None) is not None:
-    verdi_hosts.extend([i['VERDI_PVT_IP'] for i in context['OTHER_VERDI_HOSTS'] if i['VERDI_PVT_IP'] is not None])
 
 # define roles
 env.roledefs = {
@@ -102,6 +100,16 @@ def get_context(node_type=None):
 
     ctx = deepcopy(context)
 
+    # use public IP for build hosts not on infrastructure LAN
+    #if env.host_string in (govcloud_build_verdi_host, jplcloud_build_verdi_host,
+    #                       docker_build_verdi_host, ts_verdi_host, leaflet_host):
+    #    for pvt_ip in ('MOZART_PVT_IP', 'METRICS_PVT_IP', 'GRQ_PVT_IP',
+    #                   'FACTOTUM_PVT_IP', 'PUCCINI_PVT_IP', 'VERDI_PVT_IP',
+    #                   'VERDI_ML_PVT_IP', 'GOVCLOUD_VERDI_PVT_IP',
+    #                   'JPLCLOUD_VERDI_PVT_IP', 'DOCKER_VERDI_PVT_IP',
+    #                   'VERDI_TS_PVT_IP'):
+    #        ctx[pvt_ip] = ctx[pvt_ip.replace('_PVT_', '_PUB_')]
+
     if node_type == 'mozart':
         if ctx['MOZART_PVT_IP'] == ctx['MOZART_RABBIT_PVT_IP']:
             ctx['MOZART_RABBIT_PVT_IP'] = "127.0.0.1"
@@ -119,12 +127,6 @@ def get_context(node_type=None):
     if node_type == 'grq':
         if ctx['GRQ_PVT_IP'] == ctx['GRQ_ES_PVT_IP']:
             ctx['GRQ_ES_PVT_IP'] = "127.0.0.1"
-
-    # set redis passwords
-    if ctx['MOZART_REDIS_PASSWORD'] is None:
-        ctx['MOZART_REDIS_PASSWORD'] = ''
-    if ctx['METRICS_REDIS_PASSWORD'] is None:
-        ctx['METRICS_REDIS_PASSWORD'] = ''
 
     # set hostname
     ctx['HOST_STRING'] = env.host_string
@@ -359,12 +361,6 @@ def stop_docker_containers():
     run('docker stop $(docker ps -aq)')
 
 
-def systemctl(cmd, service):
-    with settings(warn_only=True):
-        with hide('everything'):
-            return run('sudo systemctl %s %s' % (cmd, service), pty=False)
-
-
 def status():
     role, hysds_dir, hostname = resolve_role()
     if exists('%s/run/supervisor.sock' % hysds_dir):
@@ -432,12 +428,6 @@ def clean_hysds_ios():
         run('sciflo/ops/tosca/scripts/clean_hysds_ios_indexes.sh http://localhost:9200')
 
 
-def create_grq_user_rules_index():
-    with prefix('source ~/sciflo/bin/activate'):
-        with cd('~/sciflo/ops/tosca/scripts'):
-            run('./create_user_rules_index.py')
-
-
 ##########################
 # mozart functions
 ##########################
@@ -460,23 +450,12 @@ def mozartd_stop():
 
 
 def redis_flush():
-    role, hysds_dir, hostname = resolve_role()
-    ctx = get_context()
-    if role == 'mozart' and ctx['MOZART_REDIS_PASSWORD'] != '':
-        cmd = 'redis-cli -a {MOZART_REDIS_PASSWORD} flushall'.format(**ctx)
-    elif role == 'metrics' and ctx['METRICS_REDIS_PASSWORD'] != '':
-        cmd = 'redis-cli -a {METRICS_REDIS_PASSWORD} flushall'.format(**ctx)
-    else:
-        cmd = 'redis-cli flushall'.format(**ctx)
-    run(cmd)
+    run('redis-cli flushall')
 
 
 def mozart_redis_flush():
     ctx = get_context()
-    if ctx['MOZART_REDIS_PASSWORD'] != '':
-        run('redis-cli -a {MOZART_REDIS_PASSWORD} -h {MOZART_REDIS_PVT_IP} flushall'.format(**ctx))
-    else:
-        run('redis-cli -h {MOZART_REDIS_PVT_IP} flushall'.format(**ctx))
+    run('redis-cli -h {MOZART_REDIS_PVT_IP} flushall'.format(**ctx))
 
 
 def rabbitmq_queues_flush():
@@ -540,8 +519,6 @@ def kill_hung():
     except: pass
     ps_x()
 
-def import_kibana(import_cmd):
-    run(import_cmd)
 
 def verdid_start(force=False):
     if not exists('verdi/run/supervisord.pid') or force:
@@ -550,7 +527,7 @@ def verdid_start(force=False):
 
 
 def verdid_clean_start():
-    run('rm -rf /data/work/scifloWork-ops/* /data/work/jobs/* /data/work/cache/* %s/verdi/log/*' % ops_dir)
+    run('rm -rf /data/work/scifloWork-ops/* /data/work/jobs/* %s/verdi/log/*' % ops_dir)
     verdid_start(True)
 
 
@@ -591,15 +568,6 @@ def pip_install_with_req(node_type, dest):
         with cd(dest):
             run('pip install --process-dependency-links -e .')
 
-def pip_install_with_req(node_type, dest, ndeps):
-    with prefix('source ~/%s/bin/activate' % node_type):
-        with cd(dest):
-	    if ndeps:
-		logger.debug("ndeps is set, so running pip without process-dependency-links")
-		run('pip install --no-deps -e .')
-	    else:
-		logger.debug("ndeps is NOT set, so running pip with process-dependency-links")
-            	run('pip install --process-dependency-links -e .')
 
 def python_setup_develop(node_type, dest):
     with prefix('source ~/%s/bin/activate' % node_type):
@@ -611,7 +579,7 @@ def python_setup_develop(node_type, dest):
 # ci functions
 ##########################
 
-def add_ci_job(repo, proto, branch=None, release=False):
+def add_ci_job(repo, proto, uid=1001, gid=1001, branch=None, release=False):
     with settings(sudo_user=context["JENKINS_USER"]):
         match = repo_re.search(repo)
         if not match:
@@ -626,6 +594,8 @@ def add_ci_job(repo, proto, branch=None, release=False):
         ctx = get_context()
         ctx['PROJECT_URL'] = repo
         ctx['BRANCH'] = branch
+        ctx['UID'] = uid
+        ctx['GID'] = gid
         job_dir = '%s/jobs/%s' % (ctx['JENKINS_DIR'], job_name)
         dest_file = '%s/config.xml' % job_dir
         mkdir(job_dir, None, None)
@@ -647,8 +617,8 @@ def add_ci_job(repo, proto, branch=None, release=False):
         run("rm tmp-jenkins-upload")
 
 
-def add_ci_job_release(repo, proto):
-    add_ci_job(repo, proto, release=True)
+def add_ci_job_release(repo, proto, uid=1001, gid=1001):
+    add_ci_job(repo, proto, uid, gid, release=True)
 
 
 def reload_configuration():
@@ -794,9 +764,9 @@ def ship_code(cwd, tar_file, encrypt=False):
     with cd(cwd):
         run('tar --exclude-vcs -cvjf %s *' % tar_file)
     if encrypt is False:
-        run('gsutil cp %s gs://%s/' % (tar_file, ctx['CODE_BUCKET']))
+        run('aws s3 cp %s s3://%s/' % (tar_file, ctx['CODE_BUCKET']))
     else:
-        run('gsutil cp %s gs://%s/' % (tar_file, ctx['CODE_BUCKET']))
+        run('aws s3 cp --sse %s s3://%s/' % (tar_file, ctx['CODE_BUCKET']))
 
 
 ##########################
@@ -810,9 +780,8 @@ def send_awscreds():
     run('chmod 700 .aws')
     upload_template('aws_config', '.aws/config', use_jinja=True, context=ctx,
                     template_dir=get_user_files_path())
-    if ctx.get('AWS_ACCESS_KEY', None) not in (None, ""):
-        upload_template('aws_credentials', '.aws/credentials', use_jinja=True, context=ctx,
-                        template_dir=get_user_files_path())
+    upload_template('aws_credentials', '.aws/credentials', use_jinja=True, context=ctx,
+                    template_dir=get_user_files_path())
     run('chmod 600 .aws/*')
     if exists('.boto'): run('rm -rf .boto')
     upload_template('boto', '.boto', use_jinja=True, context=ctx,
@@ -853,13 +822,13 @@ def ship_style(bucket=None, encrypt=False):
     upload_template('s3-bucket-listing.html.tmpl', index_file, use_jinja=True, 
                     context=ctx, template_dir=get_user_files_path())
     if encrypt is False:
-        run('gsutil cp %s gs://%s/index.html' % (index_file, bucket))
-        run('gsutil cp %s gs://%s/' % (list_js, bucket))
-        run('gsutil cp %s gs://%s/index-style' % (index_style, bucket))
+        run('aws s3 cp %s s3://%s/index.html' % (index_file, bucket))
+        run('aws s3 cp %s s3://%s/' % (list_js, bucket))
+        run('aws s3 sync %s s3://%s/index-style' % (index_style, bucket))
     else:
-        run('gsutil cp %s gs://%s/index.html' % (index_file, bucket))
-        run('gsutil cp %s gs://%s/' % (list_js, bucket))
-        run('gsutil cp %s gs://%s/index-style' % (index_style, bucket))
+        run('aws s3 cp --sse %s s3://%s/index.html' % (index_file, bucket))
+        run('aws s3 cp --sse %s s3://%s/' % (list_js, bucket))
+        run('aws s3 sync --sse %s s3://%s/index-style' % (index_style, bucket))
 
 
 ##########################
